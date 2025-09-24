@@ -5,7 +5,9 @@ __pycache__/
 *.pyd
 *.so
 
-
 # 환경파일
 .env
-first/
+
+# 맥/로그
+.DS_Store
+*.log
