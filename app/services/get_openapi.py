@@ -6,7 +6,7 @@ from app.core.config import config
 client = OpenAI(api_key = config.OPENAI_API_KEY)
 
 
-def use_message(model: str = "gpt-3.5-turbo", message: str = None):
+async def use_message(model: str = "gpt-3.5-turbo", message: str = None):
     """챗봇 방식의 gpt를 사용하여 결과를 받습니다."""
 
     response = client.responses.create(
@@ -31,4 +31,9 @@ def use_message(model: str = "gpt-3.5-turbo", message: str = None):
     return response
 
 def file_upload(model: str = "gpt-4.1-nano", file = None):
-    pass
+    """파일 첨수 테스트"""
+
+    response = client.responses.create(
+        model=model,
+
+    )
