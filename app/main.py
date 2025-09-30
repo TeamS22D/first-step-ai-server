@@ -9,7 +9,7 @@ from app.api.v1 import routes_ai
 
 ## init
 setup_logging()
-app = FastAPI(title=config.app_name, debug=config.debug)
+app = FastAPI(title=config.APP_NAME, debug=config.DEBUG)
 
 ## register routes
 app.include_router(routes_ai.router, prefix="/api/v1/ai", tags=["AI"])
