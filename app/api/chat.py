@@ -3,11 +3,13 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
+from app.core.config import config
 
 app = FastAPI()
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+client = OpenAI(api_key=config.openai_api_key)
 
 conversation_history = []
 
@@ -29,7 +31,7 @@ async def chat_with_gpt(request: UserMessage):
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=messages
+            messages=messages,
         )
 
         reply = response.choices[0].message.content
