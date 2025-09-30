@@ -9,7 +9,7 @@ app = FastAPI()
 load_dotenv()
 
 
-client = OpenAI(api_key=config.openai_api_key)
+client = OpenAI(api_key=config.OPENAI_API_KEY)
 
 conversation_history = []
 
