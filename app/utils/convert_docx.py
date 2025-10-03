@@ -1,5 +1,5 @@
 from docx import Document
-
+from docx.oxml.ns import qn
 
 def convert_docx(file_path: str):
     document = Document(file_path)
@@ -29,12 +29,11 @@ def parse_styles(file_path: str):
 
     styles_content = []
 
-    for style in document.styles:
-
-        styles_content.append(style.name)
 
     for para in document.paragraphs:
-        styles_content.append(para.style)
-
+        # styles_content.append(para.style)
+        print("style:", para.style)
+        print("style name: ", para.style.name)
 
     return styles_content
+
