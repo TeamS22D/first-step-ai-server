@@ -1,7 +1,7 @@
 from openai import OpenAI
 
 from app.core.config import config
-
+from app.schemas import WordDescription
 
 client = OpenAI(api_key = config.OPENAI_API_KEY)
 
@@ -29,6 +29,18 @@ async def use_message(model: str = "gpt-3.5-turbo", message: str = None):
     )
 
     return response
+
+def get_word_description(model:str = "gpt-4o-2024-08-06", message: str = None):
+    ## 특정 형식으로 형식으로 변환 GPT-4o부터 가능
+    response = client.responses.parse(
+        model=model,
+        input=[
+            {"role": "developer", "content": "당신은 단어의 뜻을 알려주는 인공지능입니다."},
+            {"role": "user", "content": message}
+        ],
+        text_format=WordDescription
+    )
+    return response.output_parsed
 
 def file_upload(model: str = "gpt-4.1-nano", file = None):
     """파일 첨수 테스트"""

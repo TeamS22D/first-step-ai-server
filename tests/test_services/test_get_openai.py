@@ -1,5 +1,7 @@
 import pytest
 import json
+from app.services.get_openapi import *
+
 
 from app.services import get_openapi
 
@@ -19,3 +21,12 @@ def test_convert_json():
     python_dict = json.loads(string)
 
     print(python_dict)
+
+def test_get_word_description():
+    print("\n\n#### test get word description ####\n\n")
+
+    message = "니코틴아마이드 아데닌 다이뉴클레오타이드"
+
+    response = get_word_description(message=message)
+
+    print(response, type(response))
