@@ -2,8 +2,10 @@ from openai import OpenAI
 
 from app.core.config import config
 from app.schemas import WordDescription
+from app.schemas.document import Document
 
 client = OpenAI(api_key = config.OPENAI_API_KEY)
+
 
 
 async def use_message(model: str = "gpt-3.5-turbo", message: str = None):
@@ -36,11 +38,25 @@ def get_word_description(model:str = "gpt-4o-2024-08-06", message: str = None):
         model=model,
         input=[
             {"role": "developer", "content": "당신은 단어의 뜻을 알려주는 인공지능입니다."},
-            {"role": "user", "content": message}
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": "이것은 ~입니다."},
         ],
         text_format=WordDescription
     )
     return response.output_parsed
+
+def get_markdown(model:str = "gpt-4o-2024-08-06", message: str = None):
+
+    response = client.responses.parse(
+        model=model,
+        input=[
+            {"role": "developer", "content": "당신은 주어진 문장/문단을 Markdown형식으로 변환하는 인공지능 입니다. text란에 변환한 Markdown 형식을 입력해주세요."},
+            {"role": "user", "content": message},
+        ],
+        text_format=Document
+    )
+    return response.output_parsed
+
 
 def file_upload(model: str = "gpt-4.1-nano", file = None):
     """파일 첨수 테스트"""
@@ -49,3 +65,12 @@ def file_upload(model: str = "gpt-4.1-nano", file = None):
         model=model,
 
     )
+
+
+    """
+    1. 세부 평가 항목
+        각 항목별 필수 항목 ...
+        
+    근거 자료, 예시 자료를 프롬프트에게 제공
+    
+    """
