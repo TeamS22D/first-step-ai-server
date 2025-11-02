@@ -86,7 +86,7 @@ def ask_gpt(
         system_prompt: Optional[str] = None,
         additional_messages: Optional[List[Dict[str, str]]] = None,
         max_tokens: Optional[int] = None,
-) -> BaseModel:
+) -> "BaseModel":
     """
         GPT에 질의하고 Pydantic response_model로 파싱해서 결과를 반환합니다.
 

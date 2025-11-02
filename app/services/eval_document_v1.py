@@ -9,18 +9,19 @@ def eval_document_v1(
         model: str="gpt-4o",
         rubric: str="",
         user_prompt: str = None,
-        developer_prompt: str = None
-) -> "BaseModel":
+) -> DocumentEvaluation:
     """ 사용자 맞춤형 문서 평가 결과를 반환합니다.
 
     """
 
+    #TODO: 문제의 맞는 답을 도출하는지 ( 문제에 제시한 내용을 포함하는가 )
+
     developer_prompt = build_evaluation_prompt(rubric)
 
-    ask_gpt(response_model=DocumentEvaluation,
+    return ask_gpt(response_model=DocumentEvaluation,
             model=model,
             user_prompt=user_prompt,
-            developer_prompt= developer_prompt,
+            developer_prompt=developer_prompt,
             )
 
 def build_evaluation_prompt(rubric_markdown: str) -> str:
