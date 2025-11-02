@@ -23,7 +23,7 @@ client = OpenAI(
     max_retries=2
 )
 
-
+## 이러한 과정이 필요한 이유 찾아보기
 _VALID_ROLES = {"system", "developer", "user", "assistant"}
 
 def _sanitize_for_log(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
