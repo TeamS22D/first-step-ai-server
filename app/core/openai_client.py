@@ -19,7 +19,7 @@ from app.utils.logger import logger
 
 client = OpenAI(
     api_key=config.OPENAI_API_KEY,
-    timeout=30.0,
+    timeout=120.0,
     max_retries=2
 )
 
@@ -86,6 +86,7 @@ def ask_gpt(
         system_prompt: Optional[str] = None,
         additional_messages: Optional[List[Dict[str, str]]] = None,
         max_tokens: Optional[int] = None,
+
 ) -> "BaseModel":
     """
         GPT에 질의하고 Pydantic response_model로 파싱해서 결과를 반환합니다.
@@ -99,16 +100,9 @@ def ask_gpt(
         :param max_tokens: 최대 토큰 수 제한
         :return: response_model 인스턴스
         :raises: APIError 등 예외 처리 필요
-        """
-
-    messages = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-    if developer_prompt:
-        messages.append({"role": "developer", "content": developer_prompt})
-    messages.append({"role": "user", "content": user_prompt})
-    if additional_messages:
-        messages.extend(additional_messages)
+    """
+    messages = _normalize_messages(user_prompt, developer_prompt, system_prompt, additional_messages)
+    # logger.info(f"0penA")
 
     try:
         logger.info(f"OpenAI 요청\n model: {model} \n messages: {messages}")
@@ -118,6 +112,7 @@ def ask_gpt(
             input=messages,
             max_output_tokens=max_tokens,
             text_format=response_model
+            # response_model=response_model,
         )
 
         return res.output_parsed
@@ -131,3 +126,30 @@ def ask_gpt(
     except Exception as e:
         logger.error(e)
         raise
+
+def ask_gpt2(
+    *,
+    user_prompt: str,
+    response_model: Type[BaseModel],
+    model: str = "gpt-4o-mini",
+    system_prompt: Optional[str] = None,
+    developer_prompt: Optional[str] = None,
+    additional_messages: Optional[List[Dict[str, str]]] = None,
+    max_tokens: Optional[int] = None,
+    reasoning_effort: Optional[str] = "medium",
+    stream: bool = False,
+):
+    messages = _normalize_messages(user_prompt, developer_prompt, system_prompt, additional_messages)
+
+    res = client.responses.create(
+        model=model,
+        input=messages,
+        response="json",
+        reasoning={"effort": reasoning_effort},
+        max_output_tokens=max_tokens,
+        stream=stream,
+    )
+
+    # 모델 응답 파싱
+    output_json = res.output[0].content[0].text
+    return response_model.model_validate_json(output_json)

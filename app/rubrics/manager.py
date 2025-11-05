@@ -4,6 +4,7 @@ import openpyxl
 from .models import Rubric, BaseCriterion, WeightedCriterion, SpecializedCriterion
 from typing import Optional, Any, List, Dict
 
+
 class RubricManager:
     def __init__(self, rubrics_dir: str = "app/rubrics"):
         self.rubrics_dir = Path(rubrics_dir)
@@ -34,7 +35,7 @@ class RubricManager:
                 if row[0] is not None and row[0] != "":
                     current_major_item = row[0]
                     current_score = row[1]
-                if row[2] is not None: # 세부 항목이 있는 경우
+                if row[2] is not None:  # 세부 항목이 있는 경우
                     rubric.base_criteria.append(BaseCriterion(
                         major_item=current_major_item,
                         score=current_score,
@@ -48,11 +49,12 @@ class RubricManager:
         # Parse '유형별 가중치'
         if '유형별 가중치' in workbook.sheetnames:
             sheet = workbook['유형별 가중치']
-            headers = [cell.value for cell in sheet[3]] # Headers in 3rd row
+            headers = [cell.value for cell in sheet[3]]  # Headers in 3rd row
             # Data starts from 4th row
             for row in sheet.iter_rows(min_row=4, max_row=sheet.max_row, values_only=True):
                 if row[0] is not None:
-                    weights = {header: weight for header, weight in zip(headers[1:], row[1:]) if header is not None and weight is not None}
+                    weights = {header: weight for header, weight in zip(headers[1:], row[1:]) if
+                               header is not None and weight is not None}
                     rubric.weighted_criteria.append(WeightedCriterion(
                         item=row[0],
                         weights=weights
@@ -84,8 +86,8 @@ class RubricManager:
         """
         if name.startswith("rubric."):
             name = name.split(".", 1)[1]
-            
+
         if name not in self.rubrics:
-            self._load_all_rubrics() # Refresh if not found
+            self._load_all_rubrics()  # Refresh if not found
 
         return self.rubrics.get(name)

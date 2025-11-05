@@ -1,22 +1,25 @@
 from app.core.openai_client import ask_gpt
 from typing import TYPE_CHECKING
 from app.models.DocumentEvaluation import DocumentEvaluation
+from app.rubrics import get_rubric
+from app.utils.prompt_converter import convert_criteria_to_prompt_string
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
 def eval_document_v1(
         model: str="gpt-4o",
-        rubric: str="",
         user_prompt: str = None,
+        document_type: str=None,
+
 ) -> DocumentEvaluation:
     """ 사용자 맞춤형 문서 평가 결과를 반환합니다.
 
     """
+    rubric = get_rubric(document_type)
+    rubric_prompt = convert_criteria_to_prompt_string(rubric.base_criteria)
 
-    #TODO: 문제의 맞는 답을 도출하는지 ( 문제에 제시한 내용을 포함하는가 )
-
-    developer_prompt = build_evaluation_prompt(rubric)
+    developer_prompt = build_evaluation_prompt(rubric_prompt)
 
     return ask_gpt(response_model=DocumentEvaluation,
             model=model,

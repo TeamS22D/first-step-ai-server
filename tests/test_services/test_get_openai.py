@@ -8,10 +8,10 @@ from app.services import get_openapi
 
 def test_get_openapi():
     message = "아첨이 무엇인지 궁금해"
-    #
-    # response = get_openapi.use_message(message=message)
-    #
-    # print(response.output_text)
+
+    response = get_openapi.use_message(message=message, model="gpt-5")
+
+    print(response)
 
 
 def test_convert_json():
@@ -40,6 +40,8 @@ def test_chat():
     response = chatting(message=message)
 
     print(response)
+
+
 
 def test_check_action():
     class API:
