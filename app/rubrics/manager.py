@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import openpyxl
@@ -16,6 +17,9 @@ class RubricManager:
         if not self.rubrics_dir.is_dir():
             return
         for file_path in self.rubrics_dir.glob("*.xlsx"):
+            logging.debug(f"loading {file_path}")
+            if str(file_path).startswith("~$"): # 임시 파일 예외 처리
+                continue
             rubric_name = file_path.stem
             self.rubrics[rubric_name] = self._parse_rubric_file(file_path)
 

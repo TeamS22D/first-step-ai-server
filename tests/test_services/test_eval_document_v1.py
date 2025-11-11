@@ -100,7 +100,7 @@ def test_eval_rubric_report():
 **작성자:** AI문서평가팀 (Data Lab 1팀)  
 **작성일:** 2025-11-04  
 **버전:** v1.0  
-
+    
 ---
 
 ## Executive Summary (요약)
@@ -212,4 +212,6 @@ def test_eval_rubric_report():
 - **Reference:** [사내 표준문서규정 v2.1](http://intranet/docs/standard21)  
 """
 
-    pprint(eval_document_v1("gpt-4o", user_prompt, "report_evaluation_criteria").__dict__)
+    pprint(eval_document_v1("gpt-4.1", user_prompt, "report_evaluation_criteria").__dict__)
+
+
