@@ -1,0 +1,83 @@
+import pytest
+from app.services.evaluate_doc_v2 import evaluate_doc_v2
+from pprint import pprint
+
+
+
+def test_evaluate_doc_v2():
+    user_prompt = """
+# FirstStep Platform - 인증 API 릴리즈 노트 v2.0.0
+작성일: 2024-06-14  
+작성자: 홍길동 / Backend팀  
+버전: v2.0.0 (분류: Major)
+
+---
+
+1. 개요 - 50자 이내 요약:  
+토큰 암호방식 개선 및 신규 API 경로 적용(간략 전환 안내)
+
+2. 버전 정보
+
+| 항목         | 내용         |
+|--------------|--------------|
+| 이전 버전    | v1.2         |
+| 현재 버전    | v2.0.0       |
+| 버전 규칙    | SemVer 2.0   |
+| 릴리즈 타입  | 전체         |
+| 배포 대상    | API 서버     |
+
+3. 주요 변경 사항
+
+| 구분   | 항목      | 변경 내용                       | 영향도      |
+|--------|-----------|----------------------------------|-------------|
+| 보안   | 토큰 포맷 | JWT에서 PASETO로 암호 알고리즘 변경 | 낮음        |
+| 신규   | 경로 변경 | /api/v2 경로 신설                | 보통        |
+
+4. Breaking Changes(하위 호환성 영향)
+
+- 설명: 기존 토큰 및 사용자 정보 응답 포맷이 호환되지 않음
+- 변경 전/후 예시(JSON 등):
+  // Before
+  { "token": "eyJ...", "user": {"id": 3, "email": "test@abc.com"} }
+  // After
+  { "token": "v2.local...", "tokenType": "PASETO" }
+- 클라이언트 영향: 엔드포인트만 변경, 응답 파서 일부 조정 필요
+- 수정 필요 항목: 사용자 ID
+
+5. 마이그레이션 가이드
+
+- 단계별 변경 지침:
+   1) 토큰 검증 로직만 새 포맷(PASETO)으로 수정
+- 예상 소요 시간: 약 1일
+- 추가 고려사항: v1 API 사용 시 자동 리디렉션 없음
+
+6. Known Issues(알려진 문제)
+
+| ID | 구분   | 설명                  | 우회 방안                 |
+|----|--------|----------------------|---------------------------|
+| #FS-21 | API응답 | v2 token_type 값 미반환 | 별도 null 체크 권장         |
+
+7. 향후 계획
+
+| 버전 | 예정 기능    | 예상 일정   |
+|------|-------------|-------------|
+| v2.1 | 세션만료알림 | 하반기 중   |
+
+8. 참고 정보
+
+- 검토자: 김승현
+- 참고 문서: 없음
+
+---
+
+© FirstStep Platform Backend Team. All rights reserved.
+
+---
+"""
+
+    pprint(
+        evaluate_doc_v2(
+            user_prompt=user_prompt,
+            document_type="report_evaluation_criteria",
+            mission_id="id_1").__dict__
+    )

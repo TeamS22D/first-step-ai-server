@@ -162,12 +162,12 @@ def evaluate_doc_v2(
     v2에서는 사용자의 문서를 단순히 평가만 할 뿐만 아니라 문제에서 주어진 조건을 만족하는지 까지 평가합니다.
 
     """
-    mission = mission_list.get(mission_id)
+    mission = get_mission(mission_id)
 
     rubric = get_rubric(document_type)
     rubric_prompt = convert_criteria_to_prompt_string(rubric.base_criteria)
 
-    developer_prompt = build_evaluation_prompt(rubric_prompt)
+    developer_prompt = build_evaluation_prompt(rubric_prompt, mission)
 
     return ask_gpt(response_model=DocumentEvaluation,
             model=model,
@@ -176,42 +176,42 @@ def evaluate_doc_v2(
             )
 
 
-def dict_to_markdown(d: dict, level: int = 2) -> str:
-    """중첩 dict를 Markdown 리스트/테이블 형식으로 변환"""
-    md = ""
-    indent = "  " * (level - 2)
-    for k, v in d.items():
-        if isinstance(v, dict):
-            md += f"{indent}- **{k}**\n"
-            md += dict_to_markdown(v, level + 1)
-        else:
-            md += f"{indent}- **{k}**: {v['작성 내용 / 예시']} ({v.get('작성 팁', '')})\n"
-    return md
 
+def build_evaluation_prompt(rubric_markdown: str, mission: dict = None) -> str:
+    """
+    루브릭 + 미션 항목(문서 작성 템플릿)을 모두 반영한 평가 프롬프트.
+    문서 품질뿐 아니라 필수 항목 누락 여부 및 보완 제안까지 포함.
+    """
 
-def build_evaluation_prompt(rubric_markdown: str, doc_fields: dict = None) -> str:
-    """
-    루브릭 표와 문서 필드(dict)를 주입할 수 있는 평가 프롬프트 생성
-    - rubric_markdown: 루브릭 표(사용자 작성)
-    - doc_fields: 문서 필드 dict (위에서 만든 release_note_fields)
-    """
-    doc_md = ""
-    if doc_fields:
-        doc_md = dict_to_markdown(doc_fields)
+    mission_md = ""
+    if mission:
+        mission_md += "## 📑 문서 구성 필수 항목 (Mission Checklist)\n"
+        for section, fields in mission.items():
+            mission_md += f"\n### {section}\n"
+            for field, info in fields.items():
+                example = info.get("작성 내용 / 예시", "")
+                tip = info.get("작성 팁", "")
+                mission_md += f"- **{field}**  \n  예시: `{example}`  \n  작성 팁: {tip}\n"
+        mission_md += "\n---\n"
 
     return f"""
-당신은 문서 품질을 평가하는 전문가입니다.
-입력으로 주어지는 문서를 아래 루브릭 기준표와 문서 구조 정보에 따라 평가하세요.
+당신은 **문서 품질 평가 전문가**입니다.  
+입력으로 주어지는 문서를 아래 두 기준에 따라 평가하세요.
+
+1. 📘 **루브릭 기준** — 문서의 품질(명료성, 완전성, 논리성 등)을 정량적으로 평가  
+2. 📑 **미션 기준** — 문서가 필수 구성 항목을 빠짐없이 포함하고 있는지 검증  
+   - 미션 기준 항목은 대항목으로 총점 **20점**입니다.  
+   - 문서 내에서 누락된 필드나 불충분한 항목은 `mission_evaluation` 및 `suggestions` 항목에 모두 반영하세요.  
+   - 즉, 누락·불명확·불충분한 항목은 **모두 개선 제안(suggestions)** 으로 작성합니다.  
 
 ---
 
-## 📘 평가 기준표 (루브릭)
+## 📘 루브릭 기준표
 {rubric_markdown}
 
 ---
 
-## 📄 문서 구조/필드 정보
-{doc_md if doc_md else "없음"}
+{mission_md if mission_md else "⚠️ 미션 항목 없음"}
 
 ---
 
@@ -220,8 +220,10 @@ def build_evaluation_prompt(rubric_markdown: str, doc_fields: dict = None) -> st
 1. 각 **소항목**을 조건 충족 여부에 따라 0~해당 항목 배점으로 채점하세요.  
 2. 같은 **대항목**에 속한 소항목 점수를 합산하여 **대항목별 총점**을 계산합니다.  
 3. 모든 대항목 점수를 합산하여 **총점(100점 만점)**으로 환산합니다.  
-   - 예: (대항목별 점수 합 ÷ 해당 항목 총배점) × 항목 가중치  
-4. 총점을 기준으로 **A~F 등급**을 결정합니다.
+4. 문서 내에서 **미션 필드가 누락된 경우**, 해당 항목마다 -2점 감점합니다.  
+5. 미션 항목이 누락되거나 불완전한 경우, `suggestions` 항목에 다음 형식으로 구체적인 보완 제안을 모두 포함합니다:
+   - `"누락된 항목명: 필요한 내용 제안 또는 예시"`  
+6. 총점을 기준으로 아래의 **등급표**에 따라 등급을 부여합니다.
 
 | 등급 | 점수 | 의미 | 품질 수준 |
 |------|------|------|-----------|
@@ -235,29 +237,34 @@ def build_evaluation_prompt(rubric_markdown: str, doc_fields: dict = None) -> st
 
 ---
 
-## 🧾 출력 요구사항 (BaseModel 준수)
+## 📊 출력 형식 (BaseModel 준수)
 
-출력은 아래 JSON 스키마 형식으로 작성합니다.
+아래 JSON 형식으로 출력하세요.
 
 ```json
 {{
-  "evaluations": [ 
+  "evaluations": [
     {{"item": "문서 구조·형식", "score": 18, "comment": "표·그림 캡션 일관성 부족"}},
     {{"item": "명료성·가독성", "score": 9, "comment": "전문용어 일부 설명 보완 필요"}}
   ],
-  "total_score": 89,
-  "grade": "B+",
+  "mission_evaluation": [
+    {{"section": "문서 기본 정보", "missing_fields": ["작성자", "버전"], "comment": "작성자/버전 정보 누락"}},
+    {{"section": "주요 변경 사항", "missing_fields": ["기능 개선 요약"], "comment": "개선된 기능 요약이 부족"}}
+  ],
+  "total_score": 83,
+  "grade": "B",
   "suggestions": [
-    "Executive Summary 섹션에 150~250자 핵심 요약문 추가",
-    "본문 내 도표·시각자료를 실제 삽입하여 캡션과 참조 일치 확보",
-    "추진 계획에 담당자와 구체 일정을 명시해 실행력 강화"
+    "작성자와 버전 정보를 명시하세요 (예: 홍길동, v1.0.1).",
+    "주요 변경 사항 섹션에 '신규 기능/수정 내역'을 표 형식으로 작성하세요.",
+    "Executive Summary를 2문장 이내로 요약문 형태로 추가하세요.
+    "~한 내용이 누락되었습니다"
   ],
   "word_feedbacks": [
-    {{"word": "평가 편향", "reason": "모호한 개념", "suggestion": "학습 데이터 내 편향 유형 명시"}},
-    {{"word": "API 공개", "reason": "구체적 범위 불분명", "suggestion": "REST API(결과 자동 배포) 등 구체 명시"}}
+    {{"word": "보안 강화", "reason": "추상적 표현", "suggestion": "비밀번호 암호화 알고리즘 변경으로 구체화"}}
   ]
 }}
 """
+
 
 def get_mission(mission_id: str) -> dict:
     return mission_list.get(mission_id)
