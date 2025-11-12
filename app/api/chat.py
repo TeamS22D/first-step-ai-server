@@ -1,47 +1,197 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel
+import json
 from dotenv import load_dotenv
-import os
-from openai import OpenAI
-from app.core.config import config
+from fastapi import APIRouter, WebSocket
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from pydantic import BaseModel, Field
+from typing import List
 
-app = FastAPI()
 load_dotenv()
 
+router = APIRouter()
 
-client = OpenAI(api_key=config.OPENAI_API_KEY)
+class MajorCategoryEvaluation(BaseModel):
+    major_category: str = Field(description="평가 대분류 항목 (예: 구조·형식, 명료성·핵심성 등)")
+    score: int = Field(description="해당 대분류의 총점")
+    feedback: str = Field(description="해당 대분류에 대한 구체적인 피드백")
 
-conversation_history = []
+class DetailedChatEvaluation(BaseModel):
+    evaluation_summary: List[MajorCategoryEvaluation] = Field(description="대분류별 평가 결과 목록")
+    total_score: int = Field(description="모든 항목의 점수를 합산한 최종 총점 (100점 만점)")
+    general_feedback: str = Field(description="대화 전체에 대한 종합 피드백")
 
-
-@app.websocket("/chat")
-async def chat_with_gpt(websocket: WebSocket):
-    await websocket.accept()
-
-    system_prompt = {
-        "role": "system",
-        "content": (
-            "넌 멍청한 말투를 써야만 하는 AI야"
-        )
+# 미션들은 임시
+MISSIONS = {
+    "1": {
+        "title": "신입사원 연차 사용하기",
+        "description": "팀의 바쁜 일정 속에서, 신입사원으로서 팀장에게 연차 사용을 허락받아야 합니다. 자신의 업무 계획과 인수인계 방안을 명확히 제시하는 것이 중요합니다.",
+        "ai_persona_prompt": (
+            "당신은 개발팀 팀장 역할을 수행하는 AI입니다. 약간 시니컬하지만, 합리적인 성격입니다. "
+            "직원이 연차를 요청할 때, 그 태도와 계획을 보고 판단하여 응답합니다. "
+            "답변의 근거로, 아래에 제시된 유사한 대화 사례(Context)를 최우선으로 참고하여 자연스러운 말투로 응답하세요."
+        ),
+        "evaluation_guideline": "사용자가 연차를 사용해야 하는 이유와 기간을 명확히 밝혔는가? 자신의 업무를 어떻게 처리하고 인수인계할 것인지 구체적인 계획을 제시했는가?",
+        "example_conversations_file": "./mission1_examples.txt"
+    },
+    "2": {
+        "title": "주간 업무 보고하기",
+        "description": "꼼꼼한 사수에게 주간 업무 진행 상황을 보고해야 합니다. 추상적인 표현 대신, 구체적인 데이터와 팩트에 기반하여 명확하게 보고하는 것이 중요합니다.",
+        "ai_persona_prompt": (
+            "당신은 꼼꼼하고 디테일을 중시하는 사수(시니어 개발자) 역할을 수행하는 AI입니다. "
+            "주니어 개발자의 업무 보고를 받고 있으며, 보고 내용이 명확하지 않으면 날카롭게 지적하고 구체적인 데이터를 요구합니다. "
+            "답변의 근거로, 아래에 제시된 유사한 대화 사례(Context)를 최우선으로 참고하여 자연스러운 말투로 응답하세요."
+        ),
+        "evaluation_guideline": "사용자가 자신의 업무 진행 상황을 구체적인 사실과 데이터를 기반으로 설명했는가? 발생한 이슈와 해결 방안에 대해 명확하게 공유했는가?",
+        "example_conversations_file": "./mission2_examples.txt"
+    },
+    "3": {
+        "title": "신규 프로젝트 기술 스택 논의하기",
+        "description": "CTO에게 신규 프로젝트에 도입할 기술 스택을 제안하고 설득해야 합니다. 기술의 장단점뿐만 아니라, 비즈니스와 팀 상황까지 고려한 논리적인 근거를 제시하는 것이 중요합니다.",
+        "ai_persona_prompt": (
+            "당신은 기술적인 깊이와 비즈니스 임팩트를 모두 고려하는 CTO 역할을 수행하는 AI입니다. "
+            "팀원의 기술 스택 제안에 대해, 기술의 장단점, 비즈니스 효과, 팀의 현재 상황 등을 종합적으로 고려하여 깊이 있는 질문을 던집니다. "
+            "답변의 근거로, 아래에 제시된 유사한 대화 사례(Context)를 최우선으로 참고하여 자연스러운 말투로 응답하세요."
+        ),
+        "evaluation_guideline": "사용자가 제안하는 기술의 장점과 단점을 명확히 이해하고 있는가? 기술적 측면 외에 비즈니스와 팀 상황에 미칠 영향까지 고려하여 제안의 타당성을 설명했는가?",
+        "example_conversations_file": "./mission3_examples.txt"
     }
+}
 
+EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입니다.
+주어진 '미션 정보'와 '채팅 내역'을 바탕으로, 사용자의 커뮤니케이션 역량을 '평가 기준표'에 따라 분석하고, 그 결과를 JSON 형식으로 제공해야 합니다.
+
+## 평가 프로세스:
+1. 먼저, '평가 기준표'의 모든 **세부 항목**을 하나하나 신중하게 평가하여 각 세부 항목의 점수를 내부적으로 계산합니다.
+2. 그 다음, 각 **대분류**별로 세부 항목 점수들을 합산하여 대분류 총점을 계산합니다.
+3. 마지막으로, 계산된 대분류별 점수와 함께, 각 대분류에 대한 **요약 피드백**을 작성합니다.
+
+## 미션 정보:
+- 미션 제목: {mission_title}
+- 미션 설명: {mission_description}
+- 핵심 평가 가이드라인: {evaluation_guideline}
+
+## 평가 기준표 (루브릭):
+{rubric}
+
+## 중요 지침:
+- **점수 계산:** 점수는 반드시 '평가 기준표'의 **세부 배점**을 모두 참고하여 계산해야 합니다.
+- **피드백 요약:** 피드백은 **대분류** 기준으로 요약해서 제공해야 합니다. 세부 항목에 대한 평가는 피드백 내용에 자연스럽게 녹여내세요.
+- **출력 형식:** 반드시 '출력 형식 지침'에 명시된 Pydantic 모델의 JSON 구조를 정확히 따라야 합니다. 다른 부가적인 설명 없이 순수한 JSON 객체만 반환하세요.
+
+## 출력 형식 지침:
+{format_instructions}
+
+## 채팅 내역:
+{chat_history}
+"""
+
+async def run_chat_session(websocket: WebSocket, mission: dict):
+    # RAG
+    await websocket.accept()
+    
     try:
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+
+        loader = TextLoader(mission["example_conversations_file"], encoding="utf-8")
+        docs = loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
+        vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
+        retriever = vectorstore.as_retriever()
+
+        contextualize_q_prompt = ChatPromptTemplate.from_messages([
+            ("system", "Given a chat history and the latest user question, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is."),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ])
+        history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
+
+        qa_system_prompt = mission["ai_persona_prompt"] + "\n\nContext:\n{context}"
+        qa_prompt = ChatPromptTemplate.from_messages([
+            ("system", qa_system_prompt),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ])
+        
+        question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+        rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+        
+        chat_history = []
+
         while True:
-            data = await websocket.receive_text()
-            messages = [system_prompt] + conversation_history + [{"role": "user", "content": data}]
+            question = await websocket.receive_text()
+            
+            if question.strip().lower() == 'exit':
+                try:
+                    await websocket.send_text("[EVAL_START]")
+                    await websocket.send_text("채팅 내역을 바탕으로 상세 평가를 시작합니다. 잠시만 기다려주세요...")
 
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-            )
+                    with open("evaluation_rubric_detailed.md", "r", encoding="utf-8") as f:
+                        rubric_content = f.read()
 
-            reply = response.choices[0].message.content
+                    parser = JsonOutputParser(pydantic_object=DetailedChatEvaluation)
+                    eval_prompt = ChatPromptTemplate.from_template(
+                        template=EVALUATION_PROMPT_TEMPLATE,
+                        partial_variables={"format_instructions": parser.get_format_instructions()},
+                    )
+                    eval_chain = eval_prompt | llm | parser
 
-            conversation_history.append({"role": "user", "content": data})
-            conversation_history.append({"role": "assistant", "content": reply})
+                    if not chat_history:
+                        raise ValueError("평가할 대화 내용이 없습니다.")
 
-            await websocket.send_text(reply)
+                    history_str = "\n".join([f"{('사용자' if msg.type == 'human' else 'AI')}: {msg.content}" for msg in chat_history])
+                    
+                    evaluation_result = await eval_chain.ainvoke({
+                        "mission_title": mission["title"],
+                        "mission_description": mission["description"],
+                        "evaluation_guideline": mission["evaluation_guideline"],
+                        "rubric": rubric_content,
+                        "chat_history": chat_history
+                    })
+                    await websocket.send_text(json.dumps(evaluation_result, ensure_ascii=False))
 
-    except WebSocketDisconnect:
-        print("연결 종료")
+                except Exception as e:
+                    print(f"Evaluation Error: {e}")
+                    error_message = {"error": f"평가 중 오류가 발생했습니다: {e}"}
+                    await websocket.send_text(json.dumps(error_message, ensure_ascii=False))
+                finally:
+                    await websocket.send_text("[EVAL_END]")
+                    break
 
+            full_answer = ""
+            async for chunk in rag_chain.astream({"input": question, "chat_history": chat_history}):
+                answer_part = chunk.get("answer", "")
+                if answer_part:
+                    full_answer += answer_part
+                    await websocket.send_text(answer_part)
+
+            chat_history.append(HumanMessage(content=question))
+            chat_history.append(AIMessage(content=full_answer))
+            
+            await websocket.send_text("[END_OF_STREAM]")
+
+    except Exception as e:
+        print(f"WebSocket Error in {websocket.url.path}: {e}")
+    finally:
+        print(f"Client disconnected from {websocket.url.path}")
+        if websocket.client_state.name != 'DISCONNECTED':
+            await websocket.close()
+
+@router.websocket("/chat/mission1")
+async def mission1_endpoint(websocket: WebSocket):
+    await run_chat_session(websocket, MISSIONS["1"])
+
+@router.websocket("/chat/mission2")
+async def mission2_endpoint(websocket: WebSocket):
+    await run_chat_session(websocket, MISSIONS["2"])
+
+@router.websocket("/chat/mission3")
+async def mission3_endpoint(websocket: WebSocket):
+    await run_chat_session(websocket, MISSIONS["3"])
