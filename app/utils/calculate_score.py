@@ -1,4 +1,3 @@
-from app.utils.rubric_manager.manager import RubricManager
 from app.utils.rubric_manager import rubric_manager
 
 
@@ -8,7 +7,8 @@ def calculate_score(rubric_name: str, special_type: str = None, score: dict = No
 
     basic_rubric = rubric_manager.get_basic_rubric(rubric_name)
     rubric_weights = rubric_manager.get_special_weights(rubric_name, special_type)
-    special_rubric = rubric_manager.get_special_rubric(rubric_name, special_type)
+    total_basic_score = rubric_manager.get_total_score(rubric_name)
+    total_special_score = rubric_manager.get_total_score(rubric_name, special_type)
 
     user_basic_scores = score.get("basic_rubric", {})
     user_basic_score = 0
@@ -21,31 +21,7 @@ def calculate_score(rubric_name: str, special_type: str = None, score: dict = No
     user_special_scores = score.get("special_rubric", {})
     user_special_score = sum([v for v in user_special_scores.values()])
 
-    score = int(user_basic_score * 0.7 + user_special_score)
+    #TODO: 가중치 따로 두기
+    score = int(user_basic_score / total_basic_score * 70 + user_special_score / total_special_score * 30)
 
     return score
-
-if __name__ == "__main__":
-    rubric_manager = RubricManager("../rubrics/")
-    
-    score_input = {
-        "basic_rubric": {
-            "문서 구조·형식": 16,
-            "목적·핵심성": 15,
-            "완결성·논리성": 20,
-            "구체성·정확성": 15,
-            "명료성·가독성": 10,
-            "실행가능성": 10,
-            "어조·매너": 10
-        },
-        "special_rubric": {
-            "이번 주 대비 진척도": 5,
-            "이슈/블로커 명시": 5,
-            "다음 주 계획 명확성": 5,
-            "KPI/메트릭 추적": 10,
-            "우선순위 표시": 5
-        }
-    }
-    #TODO: manager에 total_score 명시
-    total_score = calculate_score("document", "release_note", score_input)
-    print(total_score)
