@@ -10,7 +10,7 @@ def _parse_rubric_file(file_path: Path) -> Rubric:
         data = json.load(f)
 
         # 1. basic_rubric 파싱
-        parsed_basic_rubric = []
+        parsed_basic_rubric = {}
         for category_data in data.get("basic_rubric", []):
             # CriteriaItem 리스트 파싱
             criteria_items = [
@@ -18,13 +18,11 @@ def _parse_rubric_file(file_path: Path) -> Rubric:
                 for item_data in category_data.get("criteria", [])
             ]
             # Category 객체 생성
-            parsed_basic_rubric.append(
-                Category(
-                    category=category_data.get("category"),
-                    total_score=category_data.get("total_score"),
-                    criteria=criteria_items
-                )
+            parsed_basic_rubric[category_data.get("category")] = Category(
+                total_score=category_data.get("total_score"),
+                criteria=criteria_items
             )
+
 
         # 2. special_types 파싱
         parsed_special_types = {}
@@ -60,12 +58,11 @@ class RubricManager:
             return
         for file_path in self.rubrics_dir.glob("*.json"):
             logging.debug(f"loading {file_path}")
-            print(file_path)
             parsed_rubric = _parse_rubric_file(file_path)
             self.rubrics[parsed_rubric.rubric_name] = parsed_rubric
 
 
-    def get_basic_rubric(self, name: str) -> Optional[List[Category]]:
+    def get_basic_rubric(self, name: str) -> Optional[Dict[str, Category]]:
         """
         basic_rubric을 불러옵니다.
         <name> -> Basic Rubric
@@ -82,5 +79,9 @@ class RubricManager:
 
         return None
 
-    def get_special_rubric(self, name: str, special_type: str) -> Optional[List[SpecialTypeDetail]]:
-        basic_rubric = self.get_basic_rubric(name)
+    def get_special_rubric(self, name: str, special_type: str) -> Optional[List[CriteriaItem]]:
+        if name in self.rubrics:
+            rubric = self.rubrics.get(name)
+            if special_type in rubric.special_types:
+                return rubric.special_types.get(special_type).special_rubric
+        return None
