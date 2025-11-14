@@ -22,7 +22,7 @@ def test_calculate_document():
             "우선순위 표시": 5
         }
     }
-    total_score = calculate_score("document", "release_note", score_input)
+    total_score = calculate_score("document", "mission_01", score_input)
     assert total_score == 100
 
 def test_calculate_email():

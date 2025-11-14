@@ -19,7 +19,7 @@ class Category:
 # 3. 특수 문서 유형의 세부 내용
 @dataclass
 class SpecialTypeDetail:
-    """weekly_report, release_note 등의 특수 문서 유형 세부 구조"""
+    """weekly_report, mission_01 등의 특수 문서 유형 세부 구조"""
     weights: Dict[str, int]
     special_rubric: List[CriteriaItem] = field(default_factory=list)
 
