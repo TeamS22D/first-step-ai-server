@@ -1,5 +1,5 @@
 from typing import List
-from app.rubrics.models import BaseCriterion
+from app.rubrics._models import BaseCriterion
 from collections import defaultdict
 
 

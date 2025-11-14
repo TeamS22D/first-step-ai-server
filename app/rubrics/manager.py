@@ -1,10 +1,52 @@
 import logging
-import os
 from pathlib import Path
-import openpyxl
-from .models import Rubric, BaseCriterion, WeightedCriterion, SpecializedCriterion
+import json
+from .models import *
 from typing import Optional, Any, List, Dict
 
+def _parse_rubric_file(file_path: Path) -> Rubric:
+    """.json 파일을 불러옵니다."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+        # 1. basic_rubric 파싱
+        parsed_basic_rubric = []
+        for category_data in data.get("basic_rubric", []):
+            # CriteriaItem 리스트 파싱
+            criteria_items = [
+                CriteriaItem(**item_data)
+                for item_data in category_data.get("criteria", [])
+            ]
+            # Category 객체 생성
+            parsed_basic_rubric.append(
+                Category(
+                    category=category_data.get("category"),
+                    total_score=category_data.get("total_score"),
+                    criteria=criteria_items
+                )
+            )
+
+        # 2. special_types 파싱
+        parsed_special_types = {}
+        for type_name, type_data in data.get("special_types", {}).items():
+            # SpecialTypeDetail 내부의 special_rubric (CriteriaItem 리스트) 파싱
+            special_criteria_items = [
+                CriteriaItem(**item_data)
+                for item_data in type_data.get("special_rubric", [])
+            ]
+
+            # SpecialTypeDetail 객체 생성
+            parsed_special_types[type_name] = SpecialTypeDetail(
+                weights=type_data.get("weights", {}),
+                special_rubric=special_criteria_items
+            )
+
+        # 3. Rubric 객체 생성 및 반환
+        return Rubric(
+            rubric_name=data.get("rubric_name"),
+            basic_rubric=parsed_basic_rubric,
+            special_types=parsed_special_types
+        )
 
 class RubricManager:
     def __init__(self, rubrics_dir: str = "app/rubrics"):
@@ -16,82 +58,29 @@ class RubricManager:
         """rubrics_dir에서 모든 루브릭을 불러옵니다."""
         if not self.rubrics_dir.is_dir():
             return
-        for file_path in self.rubrics_dir.glob("*.xlsx"):
+        for file_path in self.rubrics_dir.glob("*.json"):
             logging.debug(f"loading {file_path}")
-            if str(file_path).startswith("~$"): # 임시 파일 예외 처리
-                continue
-            rubric_name = file_path.stem
-            self.rubrics[rubric_name] = self._parse_rubric_file(file_path)
+            print(file_path)
+            parsed_rubric = _parse_rubric_file(file_path)
+            self.rubrics[parsed_rubric.rubric_name] = parsed_rubric
 
-    def _parse_rubric_file(self, file_path: Path) -> Rubric:
-        """Parses a single .xlsx rubric file based on the new structure."""
 
-        workbook = openpyxl.load_workbook(file_path)
-        rubric = Rubric(name=file_path.stem)
-
-        # Parse '기본 평가표'
-        if '기본 평가표' in workbook.sheetnames:
-            sheet = workbook['기본 평가표']
-            current_major_item = ""
-            current_score = 0
-            # Headers are in the 3rd row, data starts from 4th
-            for row in sheet.iter_rows(min_row=4, values_only=True):
-                if row[0] is not None and row[0] != "":
-                    current_major_item = row[0]
-                    current_score = row[1]
-                if row[2] is not None:  # 세부 항목이 있는 경우
-                    rubric.base_criteria.append(BaseCriterion(
-                        major_item=current_major_item,
-                        score=current_score,
-                        minor_item=row[2],
-                        minor_score=row[3],
-                        evaluation_criteria=row[4],
-                        measurement_point=row[5],
-                        evaluation_method=row[6]
-                    ))
-
-        # Parse '유형별 가중치'
-        if '유형별 가중치' in workbook.sheetnames:
-            sheet = workbook['유형별 가중치']
-            headers = [cell.value for cell in sheet[3]]  # Headers in 3rd row
-            # Data starts from 4th row
-            for row in sheet.iter_rows(min_row=4, max_row=sheet.max_row, values_only=True):
-                if row[0] is not None:
-                    weights = {header: weight for header, weight in zip(headers[1:], row[1:]) if
-                               header is not None and weight is not None}
-                    rubric.weighted_criteria.append(WeightedCriterion(
-                        item=row[0],
-                        weights=weights
-                    ))
-
-        # Parse '특화 평가항목'
-        if '특화 평가항목' in workbook.sheetnames:
-            sheet = workbook['특화 평가항목']
-            current_doc_type = ""
-            # Data starts from 4th row
-            for row in sheet.iter_rows(min_row=4, values_only=True):
-                if row[0] is not None and row[0] != "":
-                    current_doc_type = row[0]
-                if row[1] is not None:
-                    rubric.specialized_criteria.append(SpecializedCriterion(
-                        doc_type=current_doc_type,
-                        item=row[1],
-                        criteria=row[2],
-                        score=row[3],
-                        measurement_method=row[4]
-                    ))
-
-        return rubric
-
-    def get_rubric(self, name: str) -> Optional[Rubric]:
+    def get_basic_rubric(self, name: str) -> Optional[List[Category]]:
         """
-        이름을 통해 루브릭을 찾음
-        <name>형식 이거나 <name.rubric>의 형태를 갖춤
+        basic_rubric을 불러옵니다.
+        <name> -> Basic Rubric
         """
-        if name.startswith("rubric."):
-            name = name.split(".", 1)[1]
+        if name in self.rubrics:
+            return self.rubrics.get(name).basic_rubric
+        return None
 
-        if name not in self.rubrics:
-            self._load_all_rubrics()  # Refresh if not found
+    def get_special_weights(self, name: str, special_type :str) -> Optional[Dict[str, int]]:
+        if name in self.rubrics:
+            rubric = self.rubrics.get(name)
+            if special_type in rubric.special_types:
+                return rubric.special_types.get(special_type).weights
 
-        return self.rubrics.get(name)
+        return None
+
+    def get_special_rubric(self, name: str, special_type: str) -> Optional[List[SpecialTypeDetail]]:
+        basic_rubric = self.get_basic_rubric(name)
