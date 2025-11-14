@@ -2,7 +2,7 @@ from app.core.openai_client import ask_gpt
 from typing import TYPE_CHECKING, Optional, List
 from app.models.DocumentEvaluation import DocumentEvaluation
 from app.rubrics import get_rubric
-from app.utils.prompt_converter import convert_criteria_to_prompt_string
+from app.utils.rubric_manager.prompt_converter import convert_criteria_to_prompt_string
 from app.models.summary_evaluation import SummaryEvaluation
 
 if TYPE_CHECKING:

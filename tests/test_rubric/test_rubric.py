@@ -1,13 +1,14 @@
-from app.rubrics import rubric_manager, get_rubric, get_evaluation_sheet
-from app.utils.prompt_converter import convert_criteria_to_prompt_string
-import pytest
-from pprint import pprint
+from typing import List
 
-def test_get_rubric():
-    print("\n\n test get_rubric \n\n")
+from app.utils import rubric_manager
 
-    report_rubric = get_rubric("report_evaluation_criteria")
-    pprint(report_rubric.base_criteria)
-    print(convert_criteria_to_prompt_string(report_rubric.base_criteria))
-    assert report_rubric.name == "report_evaluation_criteria"
+from app.utils.rubric_manager.models import Category
 
+
+def test_rubrics():
+    print("\n\n test rubrics \n\n")
+
+    assert isinstance(rubric_manager.get_basic_rubric("document"), List)
+    assert isinstance(rubric_manager.get_basic_rubric("document")[0], Category)
+
+    assert isinstance(rubric_manager.get_basic_rubric("email"), List)
