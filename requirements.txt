@@ -44,3 +44,4 @@ langchain-community
 chromadb
 tiktoken
 langchain-text-splitters
+beautifulsoup4

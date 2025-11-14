@@ -1,4 +1,6 @@
 import json
+import httpx
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from fastapi import APIRouter, WebSocket
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -11,16 +13,21 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any
 
 load_dotenv()
 
 router = APIRouter()
 
+class FeedbackDetail(BaseModel):
+    good_points: str = Field(description="이 평가 항목과 관련하여 사용자의 답변에서 잘한 점에 대한 칭찬. (1-2문장)")
+    improvement_points: str = Field(description="아쉬운 점에 대한 구체적인 지적. 반드시 채팅 내용에서 직접 예시를 인용해야 함.")
+    suggested_fix: str = Field(description="개선할 점으로 꼽은 예시를 더 좋은 표현으로 수정한 제안.")
+
 class MajorCategoryEvaluation(BaseModel):
     major_category: str = Field(description="평가 대분류 항목 (예: 구조·형식, 명료성·핵심성 등)")
     score: int = Field(description="해당 대분류의 총점")
-    feedback: str = Field(description="해당 대분류에 대한 구체적인 피드백")
+    feedback: FeedbackDetail = Field(description="해당 대분류에 대한 상세 피드백 (칭찬, 개선점, 수정 제안 포함)")
 
 class DetailedChatEvaluation(BaseModel):
     evaluation_summary: List[MajorCategoryEvaluation] = Field(description="대분류별 평가 결과 목록")
@@ -64,13 +71,49 @@ MISSIONS = {
     }
 }
 
+async def check_spelling_errors_async(text: str) -> List[Dict[str, Any]]:
+    if not text.strip():
+        return []
+    text = text[:500]
+    results = []
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://speller.cs.pusan.ac.kr/results",
+                data={"text1": text},
+                timeout=10.0
+            )
+            response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        error_entries = soup.select("tbody > tr")
+        for entry in error_entries:
+            cols = entry.select("td")
+            if len(cols) >= 4:
+                original = cols[0].text.strip()
+                corrected = cols[1].text.strip()
+                help_text = cols[2].text.strip()
+                if original and corrected:
+                    results.append({
+                        "original": original,
+                        "corrected": corrected,
+                        "help": help_text
+                    })
+        return results
+    except httpx.RequestError as e:
+        print(f"An error occurred while requesting {e.request.url!r}: {e}")
+        return []
+    except Exception as e:
+        print(f"An unexpected error occurred during spell check: {e}")
+        return []
+
+# --- 평가 프롬프트 개편 ---
 EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입니다.
-주어진 '미션 정보'와 '채팅 내역'을 바탕으로, 사용자의 커뮤니케이션 역량을 '평가 기준표'에 따라 분석하고, 그 결과를 JSON 형식으로 제공해야 합니다.
+주어진 '미션 정보', '채팅 내역', '사전 분석 정보'를 바탕으로, 사용자의 커뮤니케이션 역량을 '평가 기준표'에 따라 분석하고, 그 결과를 JSON 형식으로 제공해야 합니다.
 
 ## 평가 프로세스:
-1. 먼저, '평가 기준표'의 모든 **세부 항목**을 하나하나 신중하게 평가하여 각 세부 항목의 점수를 내부적으로 계산합니다.
-2. 그 다음, 각 **대분류**별로 세부 항목 점수들을 합산하여 대분류 총점을 계산합니다.
-3. 마지막으로, 계산된 대분류별 점수와 함께, 각 대분류에 대한 **요약 피드백**을 작성합니다.
+1. '평가 기준표'의 모든 **세부 항목**을 하나하나 신중하게 평가하여 각 세부 항목의 점수를 내부적으로 계산합니다.
+2. 각 **대분류**별로 세부 항목 점수들을 합산하여 대분류 총점을 계산합니다.
+3. 각 대분류별로 **상세 피드백**을 작성합니다. 피드백은 반드시 '칭찬할 점', '개선할 점', '수정 제안'의 3가지 구조를 따라야 합니다.
 
 ## 미션 정보:
 - 미션 제목: {mission_title}
@@ -80,9 +123,19 @@ EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입
 ## 평가 기준표 (루브릭):
 {rubric}
 
+## 사전 분석 정보:
+- 사용자의 전체 메시지에서 발견된 맞춤법 오류 및 수정 제안: 
+{spelling_corrections}
+
 ## 중요 지침:
 - **점수 계산:** 점수는 반드시 '평가 기준표'의 **세부 배점**을 모두 참고하여 계산해야 합니다.
-- **피드백 요약:** 피드백은 **대분류** 기준으로 요약해서 제공해야 합니다. 세부 항목에 대한 평가는 피드백 내용에 자연스럽게 녹여내세요.
+- **피드백 상세화:** 각 대분류별 피드백은 아래 3가지 항목을 반드시 포함해야 합니다.
+    1.  `good_points`: 사용자의 답변에서 해당 대분류와 관련하여 잘한 점을 1~2가지 칭찬합니다.
+    2.  `improvement_points`: 아쉬운 점을 지적할 때는, 반드시 **채팅 내용에서 직접 예시를 인용**하여 설명해야 합니다. (예: "'그냥저냥 됐습니다'라고 말씀하신 부분은...")
+    3.  `suggested_fix`: 'improvement_points'에서 지적한 예시를 **더 좋은 표현으로 수정**하여 제안해야 합니다. (예: "'그냥저냥 됐습니다' 보다는 '목표했던 CTR 98% 달성했습니다'와 같이 구체적인 수치로 말씀해주시면 좋습니다.")
+- **맞춤법 평가 (매우 중요):**
+    - '언어 표현력' 대분류의 '맞춤법/띄어쓰기' 항목 점수는 **오직 '사전 분석 정보'로 제공된 맞춤법 오류 목록**에 근거하여 채점해야 합니다.
+    - '언어 표현력'의 피드백 중 `improvement_points`와 `suggested_fix`를 작성할 때, "사전 분석 정보"에 있는 구체적인 오류와 수정 제안을 **최소 1개 이상 예시로** 들어 설명해야 합니다. (예: "'않되'는 '안돼'로 수정하는 것이 올바른 표현입니다.")
 - **출력 형식:** 반드시 '출력 형식 지침'에 명시된 Pydantic 모델의 JSON 구조를 정확히 따라야 합니다. 다른 부가적인 설명 없이 순수한 JSON 객체만 반환하세요.
 
 ## 출력 형식 지침:
@@ -93,70 +146,61 @@ EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입
 """
 
 async def run_chat_session(websocket: WebSocket, mission: dict):
-    # RAG
     await websocket.accept()
-    
     try:
         llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
-
         loader = TextLoader(mission["example_conversations_file"], encoding="utf-8")
         docs = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
         vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
         retriever = vectorstore.as_retriever()
-
         contextualize_q_prompt = ChatPromptTemplate.from_messages([
             ("system", "Given a chat history and the latest user question, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is."),
             MessagesPlaceholder("chat_history"),
             ("human", "{input}"),
         ])
         history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
-
         qa_system_prompt = mission["ai_persona_prompt"] + "\n\nContext:\n{context}"
         qa_prompt = ChatPromptTemplate.from_messages([
             ("system", qa_system_prompt),
             MessagesPlaceholder("chat_history"),
             ("human", "{input}"),
         ])
-        
         question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
         rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-        
         chat_history = []
 
         while True:
             question = await websocket.receive_text()
-            
             if question.strip().lower() == 'exit':
                 try:
                     await websocket.send_text("[EVAL_START]")
                     await websocket.send_text("채팅 내역을 바탕으로 상세 평가를 시작합니다. 잠시만 기다려주세요...")
-
+                    if not chat_history:
+                        raise ValueError("평가할 대화 내용이 없습니다.")
+                    user_messages = [msg.content for msg in chat_history if isinstance(msg, HumanMessage)]
+                    full_user_text = " ".join(user_messages)
+                    spelling_corrections = await check_spelling_errors_async(full_user_text)
+                    spelling_corrections_str = json.dumps(spelling_corrections, ensure_ascii=False, indent=2) if spelling_corrections else "오류 없음"
                     with open("evaluation_rubric_detailed.md", "r", encoding="utf-8") as f:
                         rubric_content = f.read()
-
                     parser = JsonOutputParser(pydantic_object=DetailedChatEvaluation)
                     eval_prompt = ChatPromptTemplate.from_template(
                         template=EVALUATION_PROMPT_TEMPLATE,
                         partial_variables={"format_instructions": parser.get_format_instructions()},
                     )
                     eval_chain = eval_prompt | llm | parser
-
-                    if not chat_history:
-                        raise ValueError("평가할 대화 내용이 없습니다.")
-
                     history_str = "\n".join([f"{('사용자' if msg.type == 'human' else 'AI')}: {msg.content}" for msg in chat_history])
-                    
                     evaluation_result = await eval_chain.ainvoke({
                         "mission_title": mission["title"],
                         "mission_description": mission["description"],
                         "evaluation_guideline": mission["evaluation_guideline"],
                         "rubric": rubric_content,
-                        "chat_history": chat_history
+                        "chat_history": history_str,
+                        "spelling_corrections": spelling_corrections_str
                     })
                     await websocket.send_text(json.dumps(evaluation_result, ensure_ascii=False))
-
                 except Exception as e:
                     print(f"Evaluation Error: {e}")
                     error_message = {"error": f"평가 중 오류가 발생했습니다: {e}"}
@@ -164,19 +208,15 @@ async def run_chat_session(websocket: WebSocket, mission: dict):
                 finally:
                     await websocket.send_text("[EVAL_END]")
                     break
-
             full_answer = ""
             async for chunk in rag_chain.astream({"input": question, "chat_history": chat_history}):
                 answer_part = chunk.get("answer", "")
                 if answer_part:
                     full_answer += answer_part
                     await websocket.send_text(answer_part)
-
             chat_history.append(HumanMessage(content=question))
             chat_history.append(AIMessage(content=full_answer))
-            
             await websocket.send_text("[END_OF_STREAM]")
-
     except Exception as e:
         print(f"WebSocket Error in {websocket.url.path}: {e}")
     finally:
