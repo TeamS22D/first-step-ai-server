@@ -106,7 +106,6 @@ async def check_spelling_errors_async(text: str) -> List[Dict[str, Any]]:
         print(f"An unexpected error occurred during spell check: {e}")
         return []
 
-# --- 평가 프롬프트 개편 ---
 EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입니다.
 주어진 '미션 정보', '채팅 내역', '사전 분석 정보'를 바탕으로, 사용자의 커뮤니케이션 역량을 '평가 기준표'에 따라 분석하고, 그 결과를 JSON 형식으로 제공해야 합니다.
 
@@ -124,8 +123,7 @@ EVALUATION_PROMPT_TEMPLATE = """당신은 커뮤니케이션 전문 평가관입
 {rubric}
 
 ## 사전 분석 정보:
-- 사용자의 전체 메시지에서 발견된 맞춤법 오류 및 수정 제안: 
-{spelling_corrections}
+- (LLM이 채팅 내역을 직접 분석하여 맞춤법/띄어쓰기 오류를 찾아 피드백에 반영합니다.)
 
 ## 중요 지침:
 - **점수 계산:** 점수는 반드시 '평가 기준표'의 **세부 배점**을 모두 참고하여 계산해야 합니다.
@@ -179,10 +177,7 @@ async def run_chat_session(websocket: WebSocket, mission: dict):
                     await websocket.send_text("채팅 내역을 바탕으로 상세 평가를 시작합니다. 잠시만 기다려주세요...")
                     if not chat_history:
                         raise ValueError("평가할 대화 내용이 없습니다.")
-                    user_messages = [msg.content for msg in chat_history if isinstance(msg, HumanMessage)]
-                    full_user_text = " ".join(user_messages)
-                    spelling_corrections = await check_spelling_errors_async(full_user_text)
-                    spelling_corrections_str = json.dumps(spelling_corrections, ensure_ascii=False, indent=2) if spelling_corrections else "오류 없음"
+                    
                     with open("evaluation_rubric_detailed.md", "r", encoding="utf-8") as f:
                         rubric_content = f.read()
                     parser = JsonOutputParser(pydantic_object=DetailedChatEvaluation)
@@ -198,7 +193,6 @@ async def run_chat_session(websocket: WebSocket, mission: dict):
                         "evaluation_guideline": mission["evaluation_guideline"],
                         "rubric": rubric_content,
                         "chat_history": history_str,
-                        "spelling_corrections": spelling_corrections_str
                     })
                     await websocket.send_text(json.dumps(evaluation_result, ensure_ascii=False))
                 except Exception as e:
