@@ -6,16 +6,16 @@ client = OpenAI(api_key = config.OPENAI_API_KEY)
 
 
 
-def use_message(model: str = "gpt-3.5-turbo", message: str = None):
+def use_message(model: str = "gpt-3.5-turbo", message: str = None, developer: str = None):
     """챗봇 방식의 gpt를 사용하여 결과를 받습니다."""
 
     response = client.responses.create(
         model=model,
         input=[
             {
-                "role": "system",
+                "role": "developer",
                 "content": [
-                    {"type": "input_text", "text": "사용자의 질문에 응답하세요"}
+                    {"type": "input_text", "text": developer}
                 ]
             },
             {

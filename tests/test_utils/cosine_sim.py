@@ -16,6 +16,7 @@ documents = [
     """복잡한 조인 구조로 인한 데이터 조회 시간 지연 → 데이터베이스 인덱싱 구조 분석 및 API 리팩터링 진행 중""",
     "스마트홈 기능을 100% 활용하고, 사용자 편의성에 최적화된 IoT 제어 앱을 개발하는 프로젝트",
     "일부 기기 연결 시 안정성 문제 발생",
+    "기기 일부 제어 실패"
 ]
 
 query = "일부 기기는 연결은 가능하지만 제어 기능 동작 실패."
@@ -24,6 +25,6 @@ query = "일부 기기는 연결은 가능하지만 제어 기능 동작 실패.
 tfidf_matrix = vectorizer.fit_transform(documents + [query])
 
 cosine_sim = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1])
-
+print(type(cosine_sim))
 for idx, score in enumerate(cosine_sim[0]):
     print(idx, score)

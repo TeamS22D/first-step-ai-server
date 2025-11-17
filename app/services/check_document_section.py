@@ -1,16 +1,20 @@
-{
-  "mission_id": "mission_01",
-  "mission_type": "weekly_report",
-  "mission_context": "/mission_01.md",
-  "mission_template": "/template_01.md",
+from typing import List
+from app.utils.cosine_sim import calculate_cosine_sim
+import mistune
 
-  "purpose": "프로젝트 진행 내용을 기반으로 주간 또는 특정 기간 동안의 작업 결과를 구조화하여 보고하도록 함.",
+"""
+mission_xx.json 요소
 
-  "document_elements": {
-    "document_name": "project_basic_info.project_name"
+document_elements:
+    document_name: 문서의 이름이 들어가는 란 입니다. type: heading, attrs: level: 1을 참고함
+
+"""
+
+mission_01 = {
+    "document_elements": {
+    "document_name": "스마트홈 IoT 앱 개발 프로젝트"
   },
-
-  "required_sections": {
+    "required_sections": {
     "project_basic_info": {
     "project_name": "스마트홈 IoT 앱 개발 프로젝트",
     "period": "2025.06 ~ 2025.09 (3개월)",
@@ -47,3 +51,50 @@
   }
   }
 }
+
+def check_report_document_section(
+        doc: str,
+        mission_id: str = None,
+)-> dict:
+    """문서 내용을 임시로 확인하는 함수입니다."""
+    section_score = {}
+    # 문서
+    parser = mistune.create_markdown(renderer='ast')
+    ast = parser(doc)
+
+    # 문서 이름 확인
+    document_name = mission_01["document_elements"]["document_name"]
+
+    #TODO: 일단 h1을 무조건 하나만 쓰도록 규제하고 싶은데 일단.. 그  작업은 나중에 하는편이 좋을 듯
+    user_doc_name = get_raw_text(ast)
+    scores = calculate_cosine_sim(user_doc_name, document_name)
+    section_score["document_name"] = scores[0][0]
+
+
+
+
+
+def get_heading(
+    doc: List[dict],
+    level: int = 1
+) -> List[dict]:
+    return [e.get("children")
+            for e in doc
+            if e.get("type") == "heading" and e.get("attrs", {}).get("level") == level
+    ]
+
+def get_raw_text(
+    doc: List[dict],
+    level: int = 1
+) -> List[str]:
+    children = get_heading(doc, level)
+    text_lst = []
+
+    #TODO: 안쪽 children도 있지만, 일단 나중에 처리
+    for child in children:
+        s = ""
+        for c in child:
+            s += c.get("raw", "")
+        text_lst.append(s)
+
+    return text_lst

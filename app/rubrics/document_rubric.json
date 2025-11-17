@@ -27,7 +27,7 @@
       "category": "완결성·논리성",
       "total_score": 20,
       "criteria": [
-        {"name": "필수 항목 충족", "score": 5, "description": "과제 요구사항 모두 포함"},
+        {"name": "필수 항목 충족", "score": 5, "description": "과제 요구사항 모두 포함. 아래 첨부 파일을 꼭 확인"},
         {"name": "정보 누락 없음", "score": 4, "description": "일정, 담당, 수치, 기한 완비"},
         {"name": "논리적 전개", "score": 4, "description": "배경→문제→해결→결과 흐름"},
         {"name": "인과관계 명시", "score": 4, "description": "원인-결과, 조치-성과 연결"},

@@ -1,6 +1,5 @@
 from typing import List, Union
 from pydantic import BaseModel
-import mistune
 
 # --- Node Models ---
 class TextNode(BaseModel):

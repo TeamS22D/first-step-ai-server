@@ -1,14 +1,10 @@
 {
-  "mission_id": "mission_01",
+  "mission_id": "mission_02",
   "mission_type": "weekly_report",
-  "mission_context": "/mission_01.md",
-  "mission_template": "/template_01.md",
+  "mission_context": "/mission_02.md",
+  "mission_template": "/template_02.md",
 
   "purpose": "프로젝트 진행 내용을 기반으로 주간 또는 특정 기간 동안의 작업 결과를 구조화하여 보고하도록 함.",
-
-  "document_elements": {
-    "document_name": "project_basic_info.project_name"
-  },
 
   "required_sections": {
     "project_basic_info": {
