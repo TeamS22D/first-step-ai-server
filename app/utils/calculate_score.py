@@ -1,14 +1,24 @@
+from typing import Dict
+
 from app.utils.rubric_manager import rubric_manager
 
+def calculate_basic_score(rubric_name: str, special_type: str = None, user_score: Dict[str, int] = None) -> int:
+    basic_rubric = rubric_manager.get_basic_rubric(rubric_name)
+    rubric_weights = rubric_manager.get_special_weights(rubric_name, special_type)
+    score = 0
 
+    for name, weights in rubric_weights.items():
+        score += user_score.get(name, 0)/100 * weights
+
+    return int(score)
 
 def calculate_score(rubric_name: str, special_type: str = None, score: dict = None) -> int:
     """루브릭을 기반으로 특화 항목에 관한 점수 계산을 합니다."""
+    return 0
 
     basic_rubric = rubric_manager.get_basic_rubric(rubric_name)
     rubric_weights = rubric_manager.get_special_weights(rubric_name, special_type)
-    total_basic_score = rubric_manager.get_total_score(rubric_name)
-    total_special_score = rubric_manager.get_total_score(rubric_name, special_type)
+
 
     user_basic_scores = score.get("basic_rubric", {})
     user_basic_score = 0

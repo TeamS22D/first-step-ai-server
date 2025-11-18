@@ -1,4 +1,5 @@
 from app.utils import calculate_score
+from app.utils.calculate_score import calculate_basic_score
 import pytest
 
 def test_calculate_document():
@@ -49,3 +50,17 @@ def test_calculate_email():
     }
     total_score = calculate_score("email", "보고형", score_input)
     assert total_score == 100
+
+def test_calculate_basic_rubric():
+    print("\n\n calculate_basic_rubric")
+
+    score_input = {
+        "구조·논리성": 20,
+        "목적 적합성": 100,
+        "내용 완성도": 100,
+        "실행 가능성": 100,
+        "전문성·톤앤매너": 100
+    }
+    score = calculate_basic_score("document_v2", "project_report", score_input)
+
+    assert score == 100
