@@ -66,11 +66,13 @@ def check_report_document_section(
     document_name = mission_01["document_elements"]["document_name"]
 
     #TODO: 일단 h1을 무조건 하나만 쓰도록 규제하고 싶은데 일단.. 그  작업은 나중에 하는편이 좋을 듯
-    user_doc_name = get_raw_text(ast)
-    scores = calculate_cosine_sim(user_doc_name, document_name)
+    doc_names = get_raw_text(ast)
+    scores = calculate_cosine_sim(doc_names, document_name)
     section_score["document_name"] = scores[0][0]
 
+    get_heading_paragraph(ast)
 
+    return section_score
 
 
 
@@ -82,6 +84,24 @@ def get_heading(
             for e in doc
             if e.get("type") == "heading" and e.get("attrs", {}).get("level") == level
     ]
+
+def get_heading_paragraph(
+    doc: List[dict],
+    level: int = 1,
+) -> List[List[dict]]:
+    """heading별로 요소를 나눔"""""
+
+    groups = []
+    group = []
+    for e in doc:
+        if e.get("type", "") == "heading":
+            if len(group) > 0:
+                groups.append(group)
+            group = [e]
+        else:
+            group.append(e)
+
+    return groups
 
 def get_raw_text(
     doc: List[dict],
