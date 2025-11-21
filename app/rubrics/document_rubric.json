@@ -1,0 +1,142 @@
+{
+  "rubric_name": "document",
+  "basic_rubric": [
+    {
+      "category": "문서 구조·형식",
+      "total_score": 20,
+      "criteria": [
+        {"name": "제목·파일명 규칙", "score": 4, "description": "[유형]_[제목]_[날짜]_v1.0 형식"},
+        {"name": "목차 및 섹션 구조", "score": 4, "description": "개요-성과-문제-계획-결론 논리적 순서"},
+        {"name": "시각적 서식", "score": 3, "description": "표, 구분선, 불릿, 강조 통일"},
+        {"name": "문단 길이·정렬", "score": 3, "description": "단락 5줄 이내, 정렬 일관"},
+        {"name": "표·그림·캡션", "score": 3, "description": "표/그림 제목·번호·출처 표시"},
+        {"name": "페이지 레이아웃", "score": 3, "description": "여백, 헤더/푸터 일관성"}
+      ]
+    },
+    {
+      "category": "목적·핵심성",
+      "total_score": 15,
+      "criteria": [
+        {"name": "보고 목적 명확성", "score": 5, "description": "첫 단락에 '무엇을 왜' 명시"},
+        {"name": "핵심요약 (Executive Summary)", "score": 4, "description": "150-250자 요약 존재"},
+        {"name": "주요 결과/성과 핵심화", "score": 3, "description": "KPI 중심, 불필요 세부 제거"},
+        {"name": "문서 제목·내용 일치", "score": 3, "description": "제목과 본문 주제 일관성"}
+      ]
+    },
+    {
+      "category": "완결성·논리성",
+      "total_score": 20,
+      "criteria": [
+        {"name": "필수 항목 충족", "score": 5, "description": "과제 요구사항 모두 포함. 아래 첨부 파일을 꼭 확인"},
+        {"name": "정보 누락 없음", "score": 4, "description": "일정, 담당, 수치, 기한 완비"},
+        {"name": "논리적 전개", "score": 4, "description": "배경→문제→해결→결과 흐름"},
+        {"name": "인과관계 명시", "score": 4, "description": "원인-결과, 조치-성과 연결"},
+        {"name": "결론·다음 단계", "score": 3, "description": "향후 계획/개선점/후속일정"}
+      ]
+    },
+    {
+      "category": "구체성·정확성",
+      "total_score": 15,
+      "criteria": [
+        {"name": "수치·지표 활용", "score": 5, "description": "%, 일정, 단가, 버전 등 정량화"},
+        {"name": "근거자료 제시", "score": 4, "description": "스크린샷, 로그, 표, 인용"},
+        {"name": "객관적 표현", "score": 3, "description": "'좋았다'→'87% 향상' 객관화"},
+        {"name": "오류/모호 표현 없음", "score": 3, "description": "'적당히, 대체로' 등 최소화"}
+      ]
+    },
+    {
+      "category": "명료성·가독성",
+      "total_score": 10,
+      "criteria": [
+        {"name": "문장 길이 적정", "score": 3, "description": "평균 20어절 이하"},
+        {"name": "용어 통일성", "score": 3, "description": "'사용자/유저' 혼용 금지"},
+        {"name": "문장 구조 간결성", "score": 2, "description": "한 문장 2절 이하"},
+        {"name": "전문용어 설명", "score": 2, "description": "약어 풀네임, 용어 정의"}
+      ]
+    },
+    {
+      "category": "실행가능성",
+      "total_score": 10,
+      "criteria": [
+        {"name": "실현 가능한 계획", "score": 4, "description": "구체 일정·담당자 포함"},
+        {"name": "리스크·한계 언급", "score": 3, "description": "위험요소, 제약사항 명시"},
+        {"name": "개선 방향 현실성", "score": 3, "description": "구체적 후속조치 계획"}
+      ]
+    },
+    {
+      "category": "어조·매너",
+      "total_score": 10,
+      "criteria": [
+        {"name": "객관적 보고 어조", "score": 2, "description": "감정/평가 표현 없이 중립"},
+        {"name": "1인칭 자제", "score": 2, "description": "조직 중심 표현"},
+        {"name": "감사·마무리 표현", "score": 1, "description": "확인 부탁, 감사 표현"},
+        {"name": "오탈자·맞춤법", "score": 2, "description": "맞춤법 검사 95% 이상"},
+        {"name": "문체 일관성", "score": 2, "description": "시제/경어 통일"},
+        {"name": "서명/부서 표기", "score": 1, "description": "작성자·소속 명시"}
+      ]
+    }
+  ],
+  "special_types": {
+    "weekly_report": {
+    "weights": {
+      "문서 구조·형식": 20,
+      "목적·핵심성": 15,
+      "완결성·논리성": 20,
+      "구체성·정확성": 15,
+      "명료성·가독성": 10,
+      "실행가능성": 10,
+      "어조·매너": 10
+    },
+    "special_rubric": [
+      {
+        "name": "필수 섹션 충족도",
+        "score": 10,
+        "description": "mission 템플릿의 6개 필수 섹션(기본정보·수행과정·팀/기술·결과·개선·향후계획)이 모두 포함되어 있는가"
+      },
+      {
+        "name": "프로젝트 수행 과정의 구체성",
+        "score": 10,
+        "description": "문제정의→기획/설계→구현→테스트/개선의 단계적 기록이 논리적이며 실제 작업 내용을 반영하는가"
+      },
+      {
+        "name": "이슈 및 블로커",
+        "score": 5,
+        "description": "진행 중 문제·리스크·의존성·지연 요소와 그 해결 전략이 구체적으로 제시되어 있는가"
+      },
+      {
+        "name": "KPI/메트릭 기반 결과",
+        "score": 10,
+        "description": "사용자 지표, 성능 수치, 기능 성공률 등 프로젝트 결과가 정량적으로 제시되어 있는가"
+      },
+      {
+        "name": "다음 주 계획의 명확성",
+        "score": 5,
+        "description": "다음 주 목표, 일정, 담당자, 산출물이 구체적으로 명시되어 있는가"
+      },
+      {
+        "name": "우선순위 기반 정리",
+        "score": 5,
+        "description": "업무 우선순위(High/Medium/Low 또는 P0/P1/P2 등)가 명확히 구분되어 있는가"
+      }
+    ]
+  },
+    "release_note": {
+      "weights": {
+        "문서 구조·형식": 25,
+        "목적·핵심성": 10,
+        "완결성·논리성": 15,
+        "구체성·정확성": 20,
+        "명료성·가독성": 15,
+        "실행가능성": 10,
+        "어조·매너": 5
+      },
+      "special_rubric": [
+        {"name": "버전 넘버링", "score": 5, "description": "Semantic Versioning 준수"},
+        {"name": "Breaking Changes", "score": 10, "description": "하위 호환성 영향 강조"},
+        {"name": "마이그레이션 가이드", "score": 5, "description": "업그레이드 방법 제시"},
+        {"name": "Known Issues", "score": 5, "description": "알려진 문제점 공개"},
+        {"name": "변경사항 카테고리화", "score": 5, "description": "New/Fixed/Changed 구분"}
+      ]
+    }
+  }
+}

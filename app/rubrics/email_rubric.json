@@ -1,0 +1,182 @@
+{
+  "rubric_name": "email",
+  "basic_rubric": [
+    {
+      "category": "구조·형식",
+      "total_score": 20,
+      "criteria": [
+        {"name": "제목 적절성", "score": 5, "description": "[말머리][핵심 주제] 형태, 10-25자"},
+        {"name": "수신/참조 구분", "score": 4, "description": "TO/CC 목적에 맞게 구분"},
+        {"name": "단락 구분 및 순서", "score": 4, "description": "인사→목적→본문→마무리"},
+        {"name": "서식 일관성", "score": 3, "description": "볼릿, 줄바꿈, 강조 통일"},
+        {"name": "첨부파일 언급", "score": 4, "description": "첨부 시 본문 언급"}
+      ]
+    },
+    {
+      "category": "목적·핵심성",
+      "total_score": 20,
+      "criteria": [
+        {"name": "첫 문단 목적 명시", "score": 6, "description": "첫 2문장 내 요청/보고 명시"},
+        {"name": "주요 키워드 포함", "score": 5, "description": "핵심 용어 포함"},
+        {"name": "배경 맥락 제시", "score": 5, "description": "발송 이유 설명"},
+        {"name": "응답 요구사항 명확성", "score": 4, "description": "구체적 액션 요청"}
+      ]
+    },
+    {
+      "category": "완결성",
+      "total_score": 20,
+      "criteria": [
+        {"name": "필수 정보 완비", "score": 6, "description": "5W1H 요소 포함"},
+        {"name": "구체성/정량화", "score": 5, "description": "70% 완료 vs 진행 중"},
+        {"name": "후속 단계 제시", "score": 5, "description": "다음 단계 명시"},
+        {"name": "기한 명시", "score": 4, "description": "YYYY-MM-DD 형식"}
+      ]
+    },
+    {
+      "category": "명료성·가독성",
+      "total_score": 15,
+      "criteria": [
+        {"name": "문장 길이 적정성", "score": 5, "description": "평균 20어절 이하"},
+        {"name": "간결한 표현", "score": 4, "description": "군더더기 10% 이하"},
+        {"name": "능동형 사용", "score": 3, "description": "능동형 70% 이상"},
+        {"name": "전문용어 설명", "score": 3, "description": "약어 풀네임 병기"}
+      ]
+    },
+    {
+      "category": "근거·신뢰성",
+      "total_score": 10,
+      "criteria": [
+        {"name": "수치·데이터 근거", "score": 4, "description": "정확한 수치 명시"},
+        {"name": "출처·참조 명시", "score": 3, "description": "관련 문서/링크"},
+        {"name": "확정적 표현", "score": 3, "description": "~입니다 vs ~ 같습니다"}
+      ]
+    },
+    {
+      "category": "실행가능성",
+      "total_score": 10,
+      "criteria": [
+        {"name": "핵심 주제 명시", "score": 3, "description": "To-Do 리스트 형태"},
+        {"name": "구체적 일정", "score": 3, "description": "담당자/부서 지정"},
+        {"name": "리스크 대응", "score": 2, "description": "모호한 표현 지양"},
+        {"name": "Plan B 제시", "score": 2, "description": "Plan B 제시"}
+      ]
+    },
+    {
+      "category": "어조·매너",
+      "total_score": 10,
+      "criteria": [
+        {"name": "인사말", "score": 3, "description": "시작/종료 인사"},
+        {"name": "존칭 사용", "score": 2, "description": "존칭 90% 이상"},
+        {"name": "긍정적 어조", "score": 2, "description": "부정 표현 최소화"},
+        {"name": "적절한 톤", "score": 1, "description": "비즈니스 중립 톤"},
+        {"name": "오탈자·맞춤법", "score": 2, "description": "맞춤법 검사 95% 이상"}
+      ]
+    },
+    {
+      "category": "보안·기밀성",
+      "total_score": 5,
+      "criteria": [
+        {"name": "민감정보 보호", "score": 2, "description": "개인정보 마스킹"},
+        {"name": "기밀 표시", "score": 2, "description": "대외비/기밀 표시"},
+        {"name": "수신자 확인", "score": 1, "description": "외부 도메인 주의"}
+      ]
+    }
+  ],
+  "special_types": {
+    "보고형": {
+      "weights": {
+        "구조·형식": 15,
+        "목적·핵심성": 15,
+        "완결성": 30,
+        "명료성·가독성": 15,
+        "근거·신뢰성": 20,
+        "실행가능성": 5,
+        "어조·매너": 5,
+        "보안·기밀성": 5
+      },
+      "special_rubric": [
+        {"name": "진행률/달성도 정량 표현", "score": 5, "description": "보고 주기 명시 (일간/주간/월간)"},
+        {"name": "이슈 및 리스크 보고", "score": 5, "description": "보고 기준일 명확히 표시"},
+        {"name": "이전 보고 대비 변경사항", "score": 5, "description": "다음 보고 예정일"},
+        {"name": "KPI/메트릭 추적", "score": 5, "description": "핵심 지표 추이 제시"},
+        {"name": "우선순위 표시", "score": 5, "description": "업무 중요도 구분"}
+      ]
+    },
+    "요청형": {
+      "weights": {
+        "구조·형식": 15,
+        "목적·핵심성": 25,
+        "완결성": 15,
+        "명료성·가독성": 15,
+        "근거·신뢰성": 5,
+        "실행가능성": 25,
+        "어조·매너": 5,
+        "보안·기밀성": 5
+      },
+      "special_rubric": [
+        {"name": "요청 우선순위 표시", "score": 5, "description": "요청 기한 명확성"},
+        {"name": "필요 리소스/권한 명시", "score": 5, "description": "요청 배경과 목적"},
+        {"name": "대안/차선책 제시", "score": 5, "description": "승인 필요 여부"},
+        {"name": "후속 단계 명시", "score": 5, "description": "다음 단계 명시"},
+        {"name": "구체적 일정", "score": 5, "description": "담당자/부서 지정"}
+      ]
+    },
+    "공유형": {
+      "weights": {
+        "구조·형식": 20,
+        "목적·핵심성": 15,
+        "완결성": 20,
+        "명료성·가독성": 20,
+        "근거·신뢰성": 10,
+        "실행가능성": 5,
+        "어조·매너": 5,
+        "보안·기밀성": 5
+      },
+      "special_rubric": [
+        {"name": "정보 출처 명시", "score": 5, "description": "FYI vs Action Required 구분"},
+        {"name": "핵심 요약 제공", "score": 5, "description": "정보 유효기간"},
+        {"name": "관련 액션 필요 여부", "score": 5, "description": "추가 문의처"},
+        {"name": "정보 누락 없음", "score": 5, "description": "일정, 담당, 수치, 기한 완비"},
+        {"name": "결론·다음 단계", "score": 5, "description": "향후 계획/개선점/후속일정"}
+      ]
+    },
+    "문의형": {
+      "weights": {
+        "구조·형식": 15,
+        "목적·핵심성": 25,
+        "완결성": 15,
+        "명료성·가독성": 20,
+        "근거·신뢰성": 5,
+        "실행가능성": 10,
+        "어조·매너": 10,
+        "보안·기밀성": 5
+      },
+      "special_rubric": [
+        {"name": "질문 번호/구조화", "score": 5, "description": "구체적인 질문"},
+        {"name": "시도한 해결방법 설명", "score": 5, "description": "관련 자료 첨부"},
+        {"name": "답변 희망 형식 제시", "score": 5, "description": "답변 필요 시점"},
+        {"name": "보고 목적 명확성", "score": 5, "description": "첫 단락에 '무엇을 왜' 명시"},
+        {"name": "핵심요약", "score": 5, "description": "150-250자 요약 존재"}
+      ]
+    },
+    "회의형": {
+      "weights": {
+        "구조·형식": 20,
+        "목적·핵심성": 20,
+        "완결성": 25,
+        "명료성·가독성": 15,
+        "근거·신뢰성": 5,
+        "실행가능성": 10,
+        "어조·매너": 5,
+        "보안·기밀성": 5
+      },
+      "special_rubric": [
+        {"name": "회의 목적/안건 명확성", "score": 5, "description": "일시/장소(온/오프라인)"},
+        {"name": "사전 준비사항 안내", "score": 5, "description": "필수/선택 참석자 구분"},
+        {"name": "예상 소요시간", "score": 5, "description": "회의 자료 사전 공유"},
+        {"name": "실현 가능한 계획", "score": 5, "description": "구체 일정·담당자 포함"},
+        {"name": "리스크·한계 언급", "score": 5, "description": "위험요소, 제약사항 명시"}
+      ]
+    }
+  }
+}
