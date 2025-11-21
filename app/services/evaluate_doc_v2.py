@@ -418,12 +418,7 @@ def build_evaluation_prompt(rubric_markdown: str, mission: dict = None) -> str:
 입력으로 주어지는 문서를 아래 두 기준에 따라 평가하세요.
 
 1. 📘 **루브릭 기준** — 문서의 품질(명료성, 완전성, 논리성 등)을 정량적으로 평가  
-2. 📑 **미션 기준** — 문서가 필수 구성 항목을 빠짐없이 포함하고 있는지 검증  
-   - 미션 기준 항목은 대항목으로 총점 **20점**입니다.  
-   - 문서 내에서 누락된 필드나 불충분한 항목은 `mission_evaluation` 및 `suggestions` 항목에 모두 반영하세요.  
-   - 즉, 누락·불명확·불충분한 항목은 **모두 개선 제안(suggestions)** 으로 작성합니다.  
 
----
 
 ## 📘 루브릭 기준표
 {rubric_markdown}

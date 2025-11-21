@@ -64,3 +64,18 @@ def test_calculate_basic_rubric():
     score = calculate_basic_score("document_v2", "project_report", score_input)
 
     assert score == 100
+
+def test_calculate_test():
+    print("\n\n calculate_test")
+
+    score_input = {
+        "구조·논리성": 60,
+        "목적 적합성": 60,
+        "내용 완성도": 50,
+        "실행 가능성": 30,
+        "전문성·톤앤매너": 5
+    }
+
+    score = calculate_basic_score("document_v2", "project_report", score_input)
+
+    print(score)

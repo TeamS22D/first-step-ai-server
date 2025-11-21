@@ -19,7 +19,6 @@ def _parse_rubric_file(file_path: Path) -> Rubric:
             ]
             # Category 객체 생성
             parsed_basic_rubric[category_data.get("category")] = Category(
-                total_score=category_data.get("total_score"),
                 criteria=criteria_items
             )
 
@@ -64,17 +63,7 @@ class RubricManager:
     def get_rubric(self, rubric_name: str) -> Optional[Rubric]:
         return self.rubrics.get(rubric_name)
 
-    def get_total_score(self, name: str, special_type: Optional[str] = None) -> int:
-        """
-        루브릭의 총 점수를 반환합니다.
-        """
-        rubric = self.rubrics.get(name)
-        if special_type:
-            if special_type in rubric.special_types:
-                special_rubrics = rubric.special_types[special_type].special_rubric
-                return sum([criteria.score for criteria in special_rubrics])
 
-        return sum([category.total_score for name, category  in rubric.basic_rubric.items()])
 
     def get_basic_rubric(self, name: str) -> Optional[Dict[str, Category]]:
         """

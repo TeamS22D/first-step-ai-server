@@ -239,3 +239,14 @@ JSON만 출력하세요.
 
     response = get_openapi.use_message("gpt-5", user_message, developer_prompt)
     print(response.output_text)
+
+def test_evaluate_report():
+    prompt = ""
+    user_prompt = ""
+    with open("app/services/report_document_prompt.txt", "r", encoding="utf-8") as f:
+        prompt = f.read()
+    with open("app/missions/templates/mission_02/example_02.md", "r", encoding="utf-8") as f:
+        user_prompt = f.read()
+
+    response = get_openapi.use_message("gpt-4o", user_prompt, prompt)
+    print(response.output_text)

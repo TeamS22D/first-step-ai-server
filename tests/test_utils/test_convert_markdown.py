@@ -172,3 +172,17 @@ def test_parse_document():
     ## table같은 경우 제대로 parsing이 진행되지 않음
     for i in ast:
         print(i)
+
+"""
+서술식/개조식/표제식
+명사형 문장 표제식
+
+문체 확인
+--
+개요, 본론에 적합한 문체를 사용하는 지
+
+-
+
+
+
+"""

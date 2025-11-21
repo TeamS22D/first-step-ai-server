@@ -13,7 +13,6 @@ class CriteriaItem:
 @dataclass
 class Category:
     """기본 평가 루브릭의 카테고리"""
-    total_score: int
     criteria: List[CriteriaItem] = field(default_factory=list)
 
 # 3. 특수 문서 유형의 세부 내용
