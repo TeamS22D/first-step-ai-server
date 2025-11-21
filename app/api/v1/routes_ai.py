@@ -10,23 +10,3 @@ router = APIRouter()
 @router.get("/")
 def test():
     return {"response": "Hello, World!!"}
-
-@router.post("/evaluate")
-async def test2(item: TestRequest):
-    try:
-        result = eval_document_v1(user_prompt=item.content, document_type=item.id)
-        save_evaluate_log(item.id, "", item.content, result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return result
-
-@router.post("/evaluate2")
-async def test3(item: AnswerRequest):
-    try:
-        result = evaluate_doc_v2(user_prompt=item.content, document_type=item.rubric_id, mission_id=item.mission_id)
-        save_evaluate_log(item.rubric_id, item.mission_id, item.content, result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return result
