@@ -150,7 +150,7 @@ async def run_chat_session(websocket: WebSocket, mission: dict):
 
         while True:
             question = await websocket.receive_text()
-            if question.strip().lower() == 'exit':
+            if question.strip().upper() == '[COMPLETE]':
                 try:
                     await websocket.send_text("[EVAL_START]")
                     await websocket.send_text("채팅 내역을 바탕으로 상세 평가를 시작합니다. 잠시만 기다려주세요...")
