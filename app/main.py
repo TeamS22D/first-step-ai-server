@@ -5,7 +5,9 @@ from app.core.config import config
 from app.utils.logger import setup_logging, logger
 
 # import routes
-from app.api.v1 import routes_ai
+from app.api.v1 import routes_ai, routes_log
+from app.api import chat  # chat 라우터 import 추가
+
 
 ## init
 setup_logging()
@@ -13,6 +15,8 @@ app = FastAPI(title=config.APP_NAME, debug=config.DEBUG)
 
 ## register routes
 app.include_router(routes_ai.router, prefix="/api/v1/ai", tags=["AI"])
+app.include_router(routes_log.router, prefix="/api/v1/log", tags=["AI-log"])
+app.include_router(chat.router)
 
 
 @app.get("/")

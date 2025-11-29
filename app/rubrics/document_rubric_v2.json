@@ -1,0 +1,85 @@
+{
+  "rubric_name": "document_v2",
+  "basic_rubric":[
+    {
+      "category": "구조·논리성",
+      "description": "문서의 기본 틀과 논리적 흐름을 평가",
+      "criteria": [
+        {"name": "제목·파일명 규칙", "score": 12, "description": "[유형]_[제목]_[날짜]_v1.0 형식 준수"},
+        {"name": "목차 및 섹션 구조", "score": 20, "description": "개요-성과-문제-계획-결론 논리적 순서"},
+        {"name": "시각적 서식 통일", "score": 12, "description": "표, 구분선, 불릿, 강조 일관성"},
+        {"name": "논리적 전개", "score": 20, "description": "배경→문제→해결→결과 자연스러운 흐름"},
+        {"name": "인과관계 명시", "score": 16, "description": "원인-결과, 조치-성과 명확한 연결"},
+        {"name": "결론·다음 단계", "score": 12, "description": "향후 계획/개선점/후속일정 제시"},
+        {"name": "페이지 레이아웃", "score": 8, "description": "여백, 헤더/푸터 일관성"}
+      ]
+    },
+    {
+      "category": "목적 적합성",
+      "description": "보고 목적의 명확성과 문맥 부합도를 평가",
+      "criteria": [
+        {"name": "보고 목적 명확성", "score":40, "description": "첫 단락에 '무엇을 왜' 명시"},
+        {"name": "핵심요약 제시", "score": 24, "description": "150-250자 Executive Summary 존재"},
+        {"name": "배경·문제 정의", "score": 24, "description": "핵심 배경과 해결할 문제가 적절히 정의됨"},
+        {"name": "문서 제목·내용 일치", "score": 12, "description": "제목과 본문 주제의 일관성"}
+      ]
+    },
+    {
+      "category": "내용 완성도",
+      "description": "내용의 정확성, 구체성, 명료성, 가독성을 종합 평가",
+      "criteria": [
+        {"name": "필수 항목 충족", "score": 18, "description": "과제 요구사항 모두 포함 (첨부 파일 확인)"},
+        {"name": "정보 누락 없음", "score": 15, "description": "일정, 담당, 수치, 기한 완비"},
+        {"name": "수치·지표 활용", "score": 15, "description": "%, 일정, 단가, 버전 등 정량화"},
+        {"name": "근거자료 제시", "score": 12, "description": "스크린샷, 로그, 표, 인용 등 객관적 자료"},
+        {"name": "표·그림·캡션", "score": 9, "description": "표/그림 제목·번호·출처 명확히 표시"},
+        {"name": "문장 길이·구조", "score": 9, "description": "평균 20어절 이하, 한 문장 2절 이하"},
+        {"name": "용어 통일성", "score": 9, "description": "'사용자/유저' 등 혼용 금지"},
+        {"name": "전문용어 설명", "score": 6, "description": "약어 풀네임, 용어 정의 제공"},
+        {"name": "객관적 표현", "score": 6, "description": "'좋았다'→'87% 향상' 객관화"},
+        {"name": "오류·모호 표현 최소화", "score": 3, "description": "'적당히, 대체로' 등 제거"}
+      ]
+    },
+    {
+      "category": "실행 가능성",
+      "description": "제안의 현실성과 실효성을 평가",
+      "criteria": [
+        {"name": "실현 가능한 계획", "score": 36, "description": "구체적 일정·담당자·자원 포함"},
+        {"name": "리스크·한계 언급", "score": 35, "description": "위험요소, 제약사항 솔직히 명시"},
+        {"name": "우선순위 타당성", "score": 16, "description": "중요도·긴급도 고려한 순서 설정"},
+        {"name": "비용·기간 적절성", "score": 13, "description": "현실적 예산 및 기간 제시"}
+      ]
+    },
+    {
+      "category": "전문성·톤앤매너",
+      "total_score": 10,
+      "description": "문서의 품격과 조직 적합성을 평가",
+      "criteria": [
+        {"name": "객관적 보고 어조", "score": 2, "description": "감정/평가 표현 없이 중립적 기술"},
+        {"name": "조직 중심 표현", "score": 2, "description": "1인칭 자제, 부서/팀 중심 서술"},
+        {"name": "오탈자·맞춤법", "score": 2, "description": "맞춤법 검사 95% 이상 정확도"},
+        {"name": "문체 일관성", "score": 2, "description": "시제/경어/톤 전체 통일"},
+        {"name": "서명·부서 표기", "score": 1, "description": "작성자·소속·날짜 명시"},
+        {"name": "마무리 표현", "score": 1, "description": "확인 요청, 감사 표현 적절히 사용"}
+      ]
+    }
+  ],
+  "special_types": {
+    "project_report": {
+      "weights": {
+        "구조·논리성": 20,
+        "목적 적합성": 15,
+        "내용 완성도": 40,
+        "실행 가능성": 15,
+        "전문성·톤앤매너": 10
+      },
+      "special_rubric": [
+        {"name": "프로젝트 개요", "score": 5, "description": "목표·범위·기간·참여자 명시"},
+        {"name": "주요 성과/산출물", "score": 8, "description": "정량적 KPI 및 deliverable 제시"},
+        {"name": "일정 준수율", "score": 5, "description": "마일스톤별 계획 대비 실적"},
+        {"name": "이슈·리스크 대응", "score": 7, "description": "발생 문제와 해결 과정 기록"},
+        {"name": "교훈·개선사항", "score": 5, "description": "향후 프로젝트 적용 가능한 인사이트"}
+      ]
+    }
+  }
+}
