@@ -20,7 +20,6 @@ def load_rubric_content():
         logger.error(f"Error reading rubric file: {e}")
         return "Error reading rubric file."
 
-# 애플리케이션 시작 시 루브릭 내용을 한 번만 로드
 EMAIL_RUBRIC = load_rubric_content()
 
 async def evaluate_email_content(user_email: str) -> EmailEvaluationResult:
