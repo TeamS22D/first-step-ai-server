@@ -9,3 +9,6 @@ __pycache__/
 # 환경파일
 .env
 first/
+
+
+.idea/
