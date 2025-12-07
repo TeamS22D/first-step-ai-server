@@ -1,5 +1,6 @@
 from typing import Dict
 
+from app.models.DocumentEvaluation import DocumentEvaluation
 from app.utils.rubric_manager import rubric_manager
 
 def calculate_basic_score(rubric_name: str, special_type: str = None, user_score: Dict[str, int] = None) -> int:
@@ -11,6 +12,10 @@ def calculate_basic_score(rubric_name: str, special_type: str = None, user_score
         score += user_score.get(name, 0)/100 * weights
 
     return int(score)
+
+def parse_scores(evaluation: DocumentEvaluation) -> Dict[str, int]:
+    return {item.item: item.score for item in evaluation.evaluations}
+
 
 def calculate_score(rubric_name: str, special_type: str = None, score: dict = None) -> int:
     """루브릭을 기반으로 특화 항목에 관한 점수 계산을 합니다."""

@@ -1,5 +1,6 @@
+from app.models.DocumentEvaluation import DocumentEvaluation, EvaluationItem, FeedBack
 from app.utils import calculate_score
-from app.utils.calculate_score import calculate_basic_score
+from app.utils.calculate_score import calculate_basic_score, parse_scores
 import pytest
 
 def test_calculate_document():
@@ -79,3 +80,42 @@ def test_calculate_test():
     score = calculate_basic_score("document_v2", "project_report", score_input)
 
     print(score)
+
+def test_parse_scores():
+    print("\n\n test_parse_scores")
+    doc_eval = DocumentEvaluation(
+        evaluations=[
+            EvaluationItem(
+                item="Structure & Logic",
+                score=85,
+                feedback=FeedBack(
+                    good_points="문서의 기본 틀과 논리적 흐름이 잘 잡혀 있음",
+                    improvement_points="중간 제목 일부가 조금 모호함",
+                    suggestion_points="항목 간 연결 문장을 추가하면 더 자연스러움"
+                )
+            ),
+            EvaluationItem(
+                item="Clarity & Expression",
+                score=90,
+                feedback=FeedBack(
+                    good_points="표현이 명확하고 이해하기 쉬움",
+                    improvement_points="일부 전문 용어에 대한 간단한 설명 추가 필요",
+                    suggestion_points="중요 개념 강조를 위해 굵은 글씨 또는 리스트 활용"
+                )
+            ),
+            EvaluationItem(
+                item="Completeness & Accuracy",
+                score=80,
+                feedback=FeedBack(
+                    good_points="필수 항목 대부분 포함됨",
+                    improvement_points="예시나 수치 근거가 부족한 부분 존재",
+                    suggestion_points="참조 링크 또는 데이터 표 첨부"
+                )
+            )
+        ],
+        total_score=0,
+        grade="B+",
+        general_feedback="전반적으로 문서가 잘 작성되었으며, 일부 세부 내용과 근거를 보완하면 우수 수준 도달 가능"
+    )
+
+    print(parse_scores(doc_eval))
