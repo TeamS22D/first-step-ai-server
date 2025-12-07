@@ -54,7 +54,6 @@ def evaluate_mission_email(mission_id: str, user_email: str):
     mission_map = {
         "mail_ex_1": "mail_1",
         "mail_ex_2": "mail_2",
-        "mail_ex_3": "mail_3"
     }
 
     actual_mission_id = mission_map.get(mission_id)
