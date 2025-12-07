@@ -1,20 +1,15 @@
-# Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
 
-# 환경파일
+.venv/
+new_venv/
+
 .env
-HEAD
-first/
-
-
-.idea/
-=======
-
-# 맥/로그
-.DS_Store
 *.log
-origin/feature/mission-merge
+
+.DS_Store
+.idea/
+*.iml
