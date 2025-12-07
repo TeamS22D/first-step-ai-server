@@ -12,3 +12,7 @@ first/
 
 
 .idea/
+
+# 맥/로그
+.DS_Store
+*.log
