@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class FeedBack(BaseModel):
     good_points: str = Field("", description="Good Points"),
     improvement_points: str = Field("", description="Improvement Points"),
-    suggestion_points: str = Field("", description="Suggestion Points")
+    suggested_fix: str = Field("", description="Suggestion Points")
 
 class EvaluationItem(BaseModel):
     item: str = Field(..., description="Category name")

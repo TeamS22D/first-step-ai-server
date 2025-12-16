@@ -49,8 +49,3 @@ class ProjectReportEvaluation(BaseModel):
         description="모호하거나 개선이 필요한 표현 피드백"
     )
 
-    # 초년생을 위한 추가 조언
-    strengths: List[str] = Field(default_factory=list, description="잘한 점 3가지")
-    priority_improvement: str = Field(default="", description="가장 시급한 개선사항 1가지")
-    next_tip: str = Field(default="", description="다음 보고서 작성 팁 1가지")
-
