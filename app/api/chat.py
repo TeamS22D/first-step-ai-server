@@ -150,12 +150,18 @@ async def get_template(template_id: int):
         tip=template.tip
     )
 
-@router.post("/chat-mission/create")
+@router.post("/chat-mission/create", status_code=201)
 async def create_chat_mission(request: CreateChatMissionRequest):
     global NEXT_CHAT_MISSION_ID
 
     if request.templateId not in MISSION_TEMPLATES:
-        raise HTTPException(status_code=404, detail="Mission template not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Mission template not found",
+                "statusCode": 404
+            })
+        )
 
     chat_mission = ChatMissionInstance(
         chatMissionId=NEXT_CHAT_MISSION_ID,
@@ -179,12 +185,18 @@ async def create_chat_mission(request: CreateChatMissionRequest):
 async def get_chat_mission(chat_mission_id: int):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(status_code=404, detail="Chat mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Chat mission not found",
+                "statusCode": 404
+            })
+        )
 
     return {
         "chatMissionId": mission.chatMissionId,
         "chatContent": mission.chatContent,
-        "sendAt": mission.sendAt,
+        "sendAt": mission.sendAt.isoformat() if mission.sendAt else None,
         "isSend": mission.isSend,
         "userMissionId": mission.userMissionId
     }
@@ -193,7 +205,13 @@ async def get_chat_mission(chat_mission_id: int):
 async def update_chat_mission(chat_mission_id: int, request: UpdateChatMissionRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(status_code=404, detail="Chat mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Chat mission not found",
+                "statusCode": 404
+            })
+        )
 
     mission.chatContent = request.chatContent
     mission.userMissionId = request.userMissionId
@@ -213,7 +231,13 @@ async def update_chat_mission(chat_mission_id: int, request: UpdateChatMissionRe
 async def save_chat_mission(chat_mission_id: int, request: SaveChatRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(status_code=404, detail="Chat mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Chat mission not found",
+                "statusCode": 404
+            })
+        )
 
     mission.chatContent = request.chatContent
     save_time = datetime.now()
@@ -222,7 +246,7 @@ async def save_chat_mission(chat_mission_id: int, request: SaveChatRequest):
         "message": "채팅이 저장되었습니다.",
         "save": {
             "chatContent": mission.chatContent,
-            "saveAt": save_time
+            "saveAt": save_time.isoformat()
         }
     }
 
@@ -230,7 +254,13 @@ async def save_chat_mission(chat_mission_id: int, request: SaveChatRequest):
 @router.delete("/chat-mission/delete/{chat_mission_id}")
 async def delete_chat_mission(chat_mission_id: int):
     if chat_mission_id not in CHAT_MISSION_INSTANCES:
-        raise HTTPException(status_code=404, detail="Chat mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Chat mission not found",
+                "statusCode": 404
+            })
+        )
 
     del CHAT_MISSION_INSTANCES[chat_mission_id]
 
@@ -243,11 +273,23 @@ async def delete_chat_mission(chat_mission_id: int):
 async def send_chat_mission(chat_mission_id: int, request: SendChatRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(status_code=404, detail="Chat mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Chat mission not found",
+                "statusCode": 404
+            })
+        )
 
     template = MISSION_TEMPLATES.get(mission.templateId)
     if not template:
-        raise HTTPException(status_code=404, detail="Mission template not found")
+        raise HTTPException(
+            status_code=404,
+            detail=json.dumps({
+                "message": "Mission template not found",
+                "statusCode": 404
+            })
+        )
 
     try:
         llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
@@ -288,7 +330,14 @@ async def send_chat_mission(chat_mission_id: int, request: SendChatRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"평가 중 오류가 발생했습니다: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=json.dumps({
+                "message": f"평가 중 오류가 발생했습니다: {str(e)}",
+                "statusCode": 500
+            })
+        )
+
 
 EVALUATION_PROMPT_TEMPLATE = """당신은 매우 꼼꼼하고 논리적인 커뮤니케이션 전문 평가관입니다.
                                 주어진 '미션 정보'와 '채팅 내역'을 바탕으로, 사용자의 커뮤니케이션 역량을 아래 기준에 따라 평가하고
@@ -339,12 +388,21 @@ EVALUATION_PROMPT_TEMPLATE = """당신은 매우 꼼꼼하고 논리적인 커�
                                 {chat_history}
                                 """
 
-async def run_chat_session(websocket: WebSocket, template_id: int):
+
+async def run_chat_session(websocket: WebSocket, chat_mission_id: int):
     await websocket.accept()
 
-    template = MISSION_TEMPLATES.get(template_id)
+    # chatMissionId로 미션 찾기
+    mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
+    if not mission:
+        await websocket.send_text(json.dumps({"error": "Chat mission not found"}, ensure_ascii=False))
+        await websocket.close()
+        return
+
+    # templateId로 템플릿 찾기
+    template = MISSION_TEMPLATES.get(mission.templateId)
     if not template:
-        await websocket.send_text(json.dumps({"error": "Mission template not found"}))
+        await websocket.send_text(json.dumps({"error": "Mission template not found"}, ensure_ascii=False))
         await websocket.close()
         return
 
@@ -374,7 +432,19 @@ async def run_chat_session(websocket: WebSocket, template_id: int):
 
         question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
         rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+        # 기존 대화 불러오기
         chat_history = []
+        if mission.chatContent and mission.chatContent != "[]":
+            try:
+                saved_history = json.loads(mission.chatContent)
+                for msg in saved_history:
+                    if msg['role'] == 'user':
+                        chat_history.append(HumanMessage(content=msg['content']))
+                    else:
+                        chat_history.append(AIMessage(content=msg['content']))
+            except:
+                pass
 
         while True:
             question = await websocket.receive_text()
@@ -400,12 +470,26 @@ async def run_chat_session(websocket: WebSocket, template_id: int):
                     ])
 
                     evaluation_result = await eval_chain.ainvoke({
-                        "mission_title": template.title,
-                        "mission_description": template.description,
+                        "mission_title": template.missionName,
+                        "mission_description": template.situation,
                         "evaluation_guideline": template.evaluation_guideline,
                         "chat_history": history_str,
                     })
 
+                    # 평가 완료 후 미션 상태 업데이트
+                    mission.isSend = True
+                    mission.sendAt = datetime.now()
+
+                    # 최종 대화 내역 저장
+                    final_history = [
+                        {
+                            "role": "user" if msg.type == "human" else "assistant",
+                            "content": msg.content,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        for msg in chat_history
+                    ]
+                    mission.chatContent = json.dumps(final_history, ensure_ascii=False)
                     await websocket.send_text(json.dumps(evaluation_result, ensure_ascii=False))
 
                 except Exception as e:
@@ -425,6 +509,17 @@ async def run_chat_session(websocket: WebSocket, template_id: int):
 
             chat_history.append(HumanMessage(content=question))
             chat_history.append(AIMessage(content=full_answer))
+
+            # 대화 내역 중간 저장
+            current_history = [
+                {
+                    "role": "user" if msg.type == "human" else "assistant",
+                    "content": msg.content,
+                    "timestamp": datetime.now().isoformat()
+                }
+                for msg in chat_history
+            ]
+            mission.chatContent = json.dumps(current_history, ensure_ascii=False)
             await websocket.send_text("[END_OF_STREAM]")
 
     except Exception as e:
@@ -434,6 +529,6 @@ async def run_chat_session(websocket: WebSocket, template_id: int):
         if websocket.client_state.name != 'DISCONNECTED':
             await websocket.close()
 
-@router.websocket("/chat/mission/{template_id}")
-async def chat_mission_websocket(websocket: WebSocket, template_id: int):
-    await run_chat_session(websocket, template_id)
+@router.websocket("/chat/mission/{chat_mission_id}")
+async def chat_mission_websocket(websocket: WebSocket, chat_mission_id: int):
+    await run_chat_session(websocket, chat_mission_id)
