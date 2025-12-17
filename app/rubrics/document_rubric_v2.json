@@ -72,14 +72,7 @@
         "내용 완성도": 40,
         "실행 가능성": 15,
         "전문성·톤앤매너": 10
-      },
-      "special_rubric": [
-        {"name": "프로젝트 개요", "score": 5, "description": "목표·범위·기간·참여자 명시"},
-        {"name": "주요 성과/산출물", "score": 8, "description": "정량적 KPI 및 deliverable 제시"},
-        {"name": "일정 준수율", "score": 5, "description": "마일스톤별 계획 대비 실적"},
-        {"name": "이슈·리스크 대응", "score": 7, "description": "발생 문제와 해결 과정 기록"},
-        {"name": "교훈·개선사항", "score": 5, "description": "향후 프로젝트 적용 가능한 인사이트"}
-      ]
+      }
     }
   }
 }
