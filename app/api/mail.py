@@ -37,7 +37,8 @@ def load_rubric():
 
 def load_missions():
     with open("app/missions.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+        return {str(m["id"]): m for m in data.get("mail_missions", [])}
 
 def load_mission_examples(file_path: str):
     try:
@@ -46,23 +47,14 @@ def load_mission_examples(file_path: str):
     except FileNotFoundError:
         return "예시 파일을 찾을 수 없습니다."
 
-def evaluate_mission_email(mission_id: str, user_email: str):
+def evaluate_mission_email(mission_id: int, user_email: str):
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    rubric_content = load_rubric()  # 변수명을 rubric_content로 변경하여 RAG용으로 명확히 구분
+    rubric_content = load_rubric()
     missions = load_missions()
 
-    mission_map = {
-        "mail_mission1": "mail_1",
-        "mail_mission2": "mail_2",
-    }
-
-    actual_mission_id = mission_map.get(mission_id)
-    if not actual_mission_id:
-        raise ValueError(f"Invalid mission_id: {mission_id}")
-
-    mission = missions.get(actual_mission_id)
+    mission = missions.get(str(mission_id))
     if not mission:
-        raise ValueError(f"Mission with ID {actual_mission_id} not found.")
+        raise ValueError(f"Mission with ID {mission_id} not found in mail_missions.")
 
     mission_scenario = mission.get("scenario", "미션 내용이 지정되지 않았습니다.")
     evaluation_guideline = mission.get("evaluation_guideline", "No specific evaluation guideline provided.")
@@ -72,8 +64,8 @@ def evaluate_mission_email(mission_id: str, user_email: str):
     if example_file_path:
         mission_examples = load_mission_examples(example_file_path)
 
+    # RAG
     rubric_doc = Document(page_content=rubric_content, metadata={"source": "email_rubric"})
-
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_documents([rubric_doc])
 
@@ -81,7 +73,7 @@ def evaluate_mission_email(mission_id: str, user_email: str):
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
-    system_template = system_template = system_template = """
+    system_template = """
                     당신은 사회초년생의 이메일 작성을 돕는 전문 AI 평가관입니다.
                     
                     **[평가 철학]:** 당신은 매우 엄격하고 비판적인 평가관입니다. **만점(100점)은 이론적으로만 가능하며, 현실적인 비즈니스 환경을 고려했을 때 사소한 개선점이라도 존재한다면 95점 이하로 감점해야 합니다.** 오직 모든 평가 기준을 완벽하게 충족하고, 단 하나의 흠도 없을 때만 만점을 부여할 수 있습니다.
@@ -90,7 +82,7 @@ def evaluate_mission_email(mission_id: str, user_email: str):
                     1.  **미션의 핵심 목적(예: 누락된 자료 요청)이 사용자 이메일 내용에 명시적으로 드러나지 않을 경우, '목적·핵심성'과 '완결성' 항목은 반드시 0~30점 사이의 낮은 점수를 부여해야 합니다.**
                     2.  이메일의 내용이 미션 시나리오와 전혀 관련이 없거나 내용이 사실상 전무할 경우, **총점을 40점 이하로 부여해야 합니다.**
                     3.  각 항목은 0점부터 시작하며, 평가 기준을 명확히 충족할 때만 점수를 올립니다. 불충족 시 감점이 아니라 점수 미부여로 처리합니다.
-
+                    
                     ## 미션 내용:
                     {mission_scenario}
                     
@@ -125,7 +117,6 @@ def evaluate_mission_email(mission_id: str, user_email: str):
 
     response = rag_chain.invoke({
         "input": user_email,
-
         "mission_scenario": mission_scenario,
         "evaluation_guideline": evaluation_guideline,
         "format_instructions": parser.get_format_instructions(),
