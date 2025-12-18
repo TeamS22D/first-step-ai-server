@@ -1,5 +1,5 @@
 from app.models.DocumentEvaluation import *
-from app.utils.calculate_score import parse_scores, calculate_basic_score
+from app.utils.calculate_score import parse_scores, calculate_basic_score, get_grade
 from app.core.config import config
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -81,5 +81,6 @@ def evaluate_document(
     )
 
     total_score = calculate_basic_score("document_v2", "project_report", parse_scores(evaluation_grade))
-    evaluation_result = EvaluationResult(**evaluation_grade.model_dump(), total_score=total_score, grade="S22D")
+    grade = get_grade(total_score)
+    evaluation_result = EvaluationResult(**evaluation_grade.model_dump(), total_score=total_score, grade=grade)
     return evaluation_result

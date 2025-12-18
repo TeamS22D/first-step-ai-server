@@ -16,6 +16,21 @@ def calculate_basic_score(rubric_name: str, special_type: str = None, user_score
 def parse_scores(evaluation: DocumentEvaluation) -> Dict[str, int]:
     return {item.item: item.score for item in evaluation.evaluations}
 
+def get_grade(score: int) -> str:
+    if score < 60:
+        return 'F'
+    elif score < 70:
+        return 'D'
+    elif score < 80:
+        return 'C'
+    elif score < 85:
+        return 'B'
+    elif score < 90:
+        return 'B+'
+    elif score < 95:
+        return 'A'
+    else:
+        return 'A+'
 
 def calculate_score(rubric_name: str, special_type: str = None, score: dict = None) -> int:
     """루브릭을 기반으로 특화 항목에 관한 점수 계산을 합니다."""
