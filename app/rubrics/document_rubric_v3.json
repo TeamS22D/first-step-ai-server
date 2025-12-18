@@ -1,139 +1,180 @@
 {
-  "rubric_name": "email_mission_weighted_v2",
-  "total_score": 100,
+  "rubric_name": "business_document_v2",
+  "total_score": 500,
   "basic_rubric": [
     {
       "category": "형식·체계",
       "total_score": 100,
-      "description": "이메일의 기본 형식과 구조적 완성도를 평가",
+      "description": "문서의 기본 형식, 구조, 시각적 완성도를 평가",
       "criteria": [
         {
-          "name": "이메일 기본 구성",
-          "score": 30,
-          "description": "제목, 수신자, 본문, 서명 형식이 모두 갖추어짐"
+          "name": "제목 및 기본 정보",
+          "score": 20,
+          "description": "문서명, 작성일, 작성자, 소속 등 기본 정보 완비"
         },
         {
-          "name": "제목의 명확성",
+          "name": "목차 및 섹션 구조",
           "score": 25,
-          "description": "요청 목적이 드러나는 비즈니스 이메일 제목"
+          "description": "논리적 순서(개요→본문→결론), 번호 체계 일관성"
         },
         {
-          "name": "문단 구성 및 가독성",
-          "score": 45,
-          "description": "인사–상황 설명–요청–마무리의 흐름이 자연스러움"
+          "name": "시각적 서식 통일",
+          "score": 20,
+          "description": "표, 글머리 기호, 구분선, 강조 표현의 일관성"
+        },
+        {
+          "name": "레이아웃 및 가독성",
+          "score": 20,
+          "description": "여백, 줄 간격, 문단 구분의 적절성"
+        },
+        {
+          "name": "표·그림 형식",
+          "score": 15,
+          "description": "표/그림 번호, 제목, 출처 표기의 완성도"
         }
       ]
     },
     {
       "category": "내용·완성도",
       "total_score": 100,
-      "description": "요청 내용의 구체성과 필수 정보 충족 여부를 평가",
+      "description": "요구사항 충족도, 정보의 정확성과 구체성을 평가",
       "criteria": [
         {
-          "name": "작성자 상황 명시",
+          "name": "필수 항목 충족",
+          "score": 25,
+          "description": "미션 requirement에서 요구한 모든 항목 포함"
+        },
+        {
+          "name": "정보의 정확성",
+          "score": 15,
+          "description": "날짜, 이름, 수치 등 정보 오류 없음"
+        },
+        {
+          "name": "정량적 데이터 활용",
           "score": 20,
-          "description": "IT 개발 부서의 신입 사원임이 명확히 드러남"
+          "description": "구체적 수치, 날짜, 비율, 금액 등 정량화"
         },
         {
-          "name": "요청 목적 명확성",
-          "score": 30,
-          "description": "자료 요청 또는 일정 변경의 이유가 분명히 설명됨"
-        },
-        {
-          "name": "자료 명칭 및 범위 명시",
-          "score": 30,
-          "description": "요청 자료의 정확한 명칭과 범위가 구체적으로 작성됨"
-        },
-        {
-          "name": "수신자 정보 정확성",
+          "name": "상세성 및 구체성",
           "score": 20,
-          "description": "문제에서 제시한 이메일 주소 정확히 사용"
+          "description": "5W1H 충족, 모호한 표현 최소화"
+        },
+        {
+          "name": "근거 자료 제시",
+          "score": 10,
+          "description": "데이터, 인용, 참고자료 등 객관적 근거 제공"
+        },
+        {
+          "name": "정보 누락 없음",
+          "score": 10,
+          "description": "작성해야 할 모든 섹션/항목 빠짐없이 작성"
         }
       ]
     },
     {
       "category": "논리·타당성",
       "total_score": 100,
-      "description": "요청 내용의 논리성과 설득력을 평가",
+      "description": "논리적 전개, 인과관계, 설득력을 평가",
       "criteria": [
         {
-          "name": "요청 흐름의 논리성",
-          "score": 40,
-          "description": "인사 → 배경 → 요청 → 기대 효과의 전개가 자연스러움"
+          "name": "논리적 흐름",
+          "score": 25,
+          "description": "배경→문제→해결→결과의 자연스러운 연결"
         },
         {
-          "name": "이유와 사용 목적 연결",
-          "score": 40,
-          "description": "왜 필요한지와 어디에 사용되는지가 명확히 연결됨"
+          "name": "인과관계 명시",
+          "score": 25,
+          "description": "원인-결과, 조치-성과의 명확한 연결"
         },
         {
-          "name": "핵심 메시지 명확성",
+          "name": "목적 및 배경 제시",
           "score": 20,
-          "description": "상대가 해야 할 행동이 분명히 드러남"
+          "description": "문서 작성 목적과 배경 상황의 명확한 설명"
+        },
+        {
+          "name": "결론 및 향후 계획",
+          "score": 20,
+          "description": "명확한 결론, 후속 조치, 향후 일정 제시"
+        },
+        {
+          "name": "우선순위 및 타당성",
+          "score": 10,
+          "description": "제안/계획의 우선순위와 근거의 합리성"
         }
       ]
     },
     {
       "category": "실행가능성",
       "total_score": 100,
-      "description": "협업 관점에서 요청의 현실성과 부담 정도를 평가",
+      "description": "제안·계획의 현실성과 실효성을 평가",
       "criteria": [
         {
-          "name": "부담 없는 요청 표현",
+          "name": "구체적 실행 계획",
           "score": 40,
-          "description": "상대 부서의 상황을 고려한 완곡한 요청 표현"
+          "description": "담당자, 일정, 예산 등 실행 요소 명시"
         },
         {
-          "name": "일정·범위의 현실성",
+          "name": "리스크 및 제약사항",
           "score": 30,
-          "description": "요청 범위와 시점이 과도하지 않음"
+          "description": "예상 문제점, 한계, 위험 요소 솔직히 언급"
         },
         {
-          "name": "후속 소통 가능성",
-          "score": 30,
-          "description": "추가 문의 또는 협의 가능성 명시"
+          "name": "비용·기간 적절성",
+          "score": 20,
+          "description": "현실적인 예산 및 일정 제시"
+        },
+        {
+          "name": "후속 조치 명확성",
+          "score": 10,
+          "description": "다음 단계, 요청사항의 구체성"
         }
       ]
     },
     {
       "category": "언어·표현",
       "total_score": 100,
-      "description": "비즈니스 이메일 문체와 언어적 완성도를 평가",
+      "description": "문체, 어조, 맞춤법 등 언어적 완성도를 평가",
       "criteria": [
         {
-          "name": "공손하고 격식 있는 문체",
-          "score": 40,
-          "description": "정중한 비즈니스 이메일 어조 유지"
+          "name": "객관적 보고체",
+          "score": 30,
+          "description": "감정 표현 배제, 중립적·객관적 어조 유지"
         },
         {
-          "name": "맞춤법 및 문법 정확성",
-          "score": 30,
-          "description": "오탈자, 띄어쓰기, 문법 오류 없음"
+          "name": "조직 중심 표현",
+          "score": 20,
+          "description": "1인칭 자제, 부서/팀 중심 서술"
         },
         {
-          "name": "불필요한 감정 표현 배제",
-          "score": 30,
-          "description": "업무와 무관한 감성적·사적인 표현 최소화"
+          "name": "맞춤법 및 문법",
+          "score": 20,
+          "description": "오탈자, 맞춤법, 띄어쓰기 정확도"
+        },
+        {
+          "name": "용어 통일성",
+          "score": 15,
+          "description": "동일 개념에 대한 용어 일관성"
+        },
+        {
+          "name": "문장 간결성",
+          "score": 10,
+          "description": "평균 20어절 이하, 간결하고 명료한 문장"
+        },
+        {
+          "name": "마무리 표현",
+          "score": 5,
+          "description": "검토 요청, 연락처 등 적절한 마무리"
         }
       ]
     }
   ],
   "special_types": {
-    "email_request": {
+    "project_report": {
       "weights": {
         "형식·체계": 20,
-        "내용·완성도": 30,
-        "논리·타당성": 25,
+        "내용·완성도": 15,
+        "논리·타당성": 40,
         "실행가능성": 15,
-        "언어·표현": 10
-      }
-    },
-    "email_schedule_change": {
-      "weights": {
-        "형식·체계": 20,
-        "내용·완성도": 25,
-        "논리·타당성": 20,
-        "실행가능성": 25,
         "언어·표현": 10
       }
     }
