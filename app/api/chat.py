@@ -1,3 +1,5 @@
+
+
 import json
 from dotenv import load_dotenv
 from fastapi import APIRouter, WebSocket, HTTPException
@@ -47,9 +49,11 @@ class ChatMissionTemplate(BaseModel):
     id: int
     missionName: str
     description: str
+    missionTheme: str
     situation: str
-    ai_persona: AIPersona
+    requirement: str
     tip: str
+    ai_persona: AIPersona
     ai_persona_prompt: str
     evaluation_guideline: str
     example_conversations_file: str
@@ -59,9 +63,11 @@ class ChatMissionTemplatePublic(BaseModel):
     id: int
     missionName: str
     description: str
+    missionTheme: str
     situation: str
-    ai_persona: AIPersona
+    requirement: str
     tip: str
+    ai_persona: AIPersona
 
 
 class ChatMessage(BaseModel):
@@ -72,7 +78,7 @@ class ChatMessage(BaseModel):
 
 class ChatMissionInstance(BaseModel):
     chatMissionId: int
-    chatContent: str  # JSON string (chatHistory를 문자열화)
+    chatContent: str
     sendAt: Optional[datetime] = None
     isSend: bool = False
     userMissionId: int
@@ -127,9 +133,11 @@ async def get_all_templates():
             id=t.id,
             missionName=t.missionName,
             description=t.description,
+            missionTheme=t.missionTheme,
             situation=t.situation,
-            ai_persona=t.ai_persona,
-            tip=t.tip
+            requirement=t.requirement,
+            tip=t.tip,
+            ai_persona=t.ai_persona
         )
         for t in MISSION_TEMPLATES.values()
     ]
@@ -145,23 +153,20 @@ async def get_template(template_id: int):
         id=template.id,
         missionName=template.missionName,
         description=template.description,
+        missionTheme=template.missionTheme,
         situation=template.situation,
-        ai_persona=template.ai_persona,
-        tip=template.tip
+        requirement=template.requirement,
+        tip=template.tip,
+        ai_persona=template.ai_persona
     )
+
 
 @router.post("/chat-mission/create", status_code=201)
 async def create_chat_mission(request: CreateChatMissionRequest):
     global NEXT_CHAT_MISSION_ID
 
     if request.templateId not in MISSION_TEMPLATES:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Mission template not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Mission template not found")
 
     chat_mission = ChatMissionInstance(
         chatMissionId=NEXT_CHAT_MISSION_ID,
@@ -185,13 +190,7 @@ async def create_chat_mission(request: CreateChatMissionRequest):
 async def get_chat_mission(chat_mission_id: int):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Chat mission not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Chat mission not found")
 
     return {
         "chatMissionId": mission.chatMissionId,
@@ -205,13 +204,7 @@ async def get_chat_mission(chat_mission_id: int):
 async def update_chat_mission(chat_mission_id: int, request: UpdateChatMissionRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Chat mission not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Chat mission not found")
 
     mission.chatContent = request.chatContent
     mission.userMissionId = request.userMissionId
@@ -231,13 +224,7 @@ async def update_chat_mission(chat_mission_id: int, request: UpdateChatMissionRe
 async def save_chat_mission(chat_mission_id: int, request: SaveChatRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Chat mission not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Chat mission not found")
 
     mission.chatContent = request.chatContent
     save_time = datetime.now()
@@ -254,13 +241,7 @@ async def save_chat_mission(chat_mission_id: int, request: SaveChatRequest):
 @router.delete("/chat-mission/delete/{chat_mission_id}")
 async def delete_chat_mission(chat_mission_id: int):
     if chat_mission_id not in CHAT_MISSION_INSTANCES:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Chat mission not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Chat mission not found")
 
     del CHAT_MISSION_INSTANCES[chat_mission_id]
 
@@ -273,23 +254,11 @@ async def delete_chat_mission(chat_mission_id: int):
 async def send_chat_mission(chat_mission_id: int, request: SendChatRequest):
     mission = CHAT_MISSION_INSTANCES.get(chat_mission_id)
     if not mission:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Chat mission not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Chat mission not found")
 
     template = MISSION_TEMPLATES.get(mission.templateId)
     if not template:
-        raise HTTPException(
-            status_code=404,
-            detail=json.dumps({
-                "message": "Mission template not found",
-                "statusCode": 404
-            })
-        )
+        raise HTTPException(status_code=404, detail="Mission template not found")
 
     try:
         llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
@@ -330,13 +299,7 @@ async def send_chat_mission(chat_mission_id: int, request: SendChatRequest):
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=json.dumps({
-                "message": f"평가 중 오류가 발생했습니다: {str(e)}",
-                "statusCode": 500
-            })
-        )
+        raise HTTPException(status_code=500, detail=f"평가 중 오류가 발생했습니다: {str(e)}")
 
 
 EVALUATION_PROMPT_TEMPLATE = """당신은 매우 꼼꼼하고 논리적인 커뮤니케이션 전문 평가관입니다.
@@ -433,7 +396,6 @@ async def run_chat_session(websocket: WebSocket, chat_mission_id: int):
         question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
         rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-        # 기존 대화 불러오기
         chat_history = []
         if mission.chatContent and mission.chatContent != "[]":
             try:
@@ -510,7 +472,6 @@ async def run_chat_session(websocket: WebSocket, chat_mission_id: int):
             chat_history.append(HumanMessage(content=question))
             chat_history.append(AIMessage(content=full_answer))
 
-            # 대화 내역 중간 저장
             current_history = [
                 {
                     "role": "user" if msg.type == "human" else "assistant",
