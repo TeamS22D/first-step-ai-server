@@ -20,6 +20,7 @@ grading_prompt = ChatPromptTemplate.from_messages(
                 - summary_feedback은 사용자가 읽는 최종 요약 피드백으로, 존댓말 한 문단으로 작성하라.
                 - internal_note에는 시스템 내부용 메모만 남기고, 사용자가 읽을 내용을 쓰지 마라.
                 - 최종 결과는 아래 스키마(DocumentEvaluation)에 맞게 구조화하여 출력하라.
+                - 루브릭 안에 있는 basic_rubric의 category별로 문서 평가를 진행해라.
             """
     ),
     (
@@ -42,7 +43,7 @@ grading_prompt = ChatPromptTemplate.from_messages(
 )
 
 base_llm = ChatOpenAI(
-    model="gpt-4o-mini",
+    model="gpt-4o",
     temperature=0,
     api_key=config.OPENAI_API_KEY
 )
@@ -80,7 +81,10 @@ def evaluate_document(
         }
     )
 
-    total_score = calculate_basic_score("document_v2", "project_report", parse_scores(evaluation_grade))
+    total_score = calculate_basic_score("business_document_v2", "project_report", parse_scores(evaluation_grade))
+    print(total_score)
     grade = get_grade(total_score)
     evaluation_result = EvaluationResult(**evaluation_grade.model_dump(), total_score=total_score, grade=grade)
+    evaluation_result.total_score = total_score
+    print(evaluation_result)
     return evaluation_result

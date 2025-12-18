@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from app.models.DocumentEvaluation import EvaluationResult
 from app.schemas.test_model import EvaluationRequest
-from app.services.evaluate_doc_v3 import evaluate_document
+from app.services.evaluate_email_v3 import evaluate_email
 from app.core.auth import verify_jwt
 
 router = APIRouter()
@@ -16,7 +16,7 @@ async def evaluate_document_router(
     #     raise HTTPException(status_code=403, detail="Invalid issuer.")
     print(request)
     try:
-        result = evaluate_document(**request.model_dump())
+        result = evaluate_email(**request.model_dump())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

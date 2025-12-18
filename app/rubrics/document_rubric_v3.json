@@ -1,0 +1,141 @@
+{
+  "rubric_name": "email_mission_weighted_v2",
+  "total_score": 100,
+  "basic_rubric": [
+    {
+      "category": "형식·체계",
+      "total_score": 100,
+      "description": "이메일의 기본 형식과 구조적 완성도를 평가",
+      "criteria": [
+        {
+          "name": "이메일 기본 구성",
+          "score": 30,
+          "description": "제목, 수신자, 본문, 서명 형식이 모두 갖추어짐"
+        },
+        {
+          "name": "제목의 명확성",
+          "score": 25,
+          "description": "요청 목적이 드러나는 비즈니스 이메일 제목"
+        },
+        {
+          "name": "문단 구성 및 가독성",
+          "score": 45,
+          "description": "인사–상황 설명–요청–마무리의 흐름이 자연스러움"
+        }
+      ]
+    },
+    {
+      "category": "내용·완성도",
+      "total_score": 100,
+      "description": "요청 내용의 구체성과 필수 정보 충족 여부를 평가",
+      "criteria": [
+        {
+          "name": "작성자 상황 명시",
+          "score": 20,
+          "description": "IT 개발 부서의 신입 사원임이 명확히 드러남"
+        },
+        {
+          "name": "요청 목적 명확성",
+          "score": 30,
+          "description": "자료 요청 또는 일정 변경의 이유가 분명히 설명됨"
+        },
+        {
+          "name": "자료 명칭 및 범위 명시",
+          "score": 30,
+          "description": "요청 자료의 정확한 명칭과 범위가 구체적으로 작성됨"
+        },
+        {
+          "name": "수신자 정보 정확성",
+          "score": 20,
+          "description": "문제에서 제시한 이메일 주소 정확히 사용"
+        }
+      ]
+    },
+    {
+      "category": "논리·타당성",
+      "total_score": 100,
+      "description": "요청 내용의 논리성과 설득력을 평가",
+      "criteria": [
+        {
+          "name": "요청 흐름의 논리성",
+          "score": 40,
+          "description": "인사 → 배경 → 요청 → 기대 효과의 전개가 자연스러움"
+        },
+        {
+          "name": "이유와 사용 목적 연결",
+          "score": 40,
+          "description": "왜 필요한지와 어디에 사용되는지가 명확히 연결됨"
+        },
+        {
+          "name": "핵심 메시지 명확성",
+          "score": 20,
+          "description": "상대가 해야 할 행동이 분명히 드러남"
+        }
+      ]
+    },
+    {
+      "category": "실행가능성",
+      "total_score": 100,
+      "description": "협업 관점에서 요청의 현실성과 부담 정도를 평가",
+      "criteria": [
+        {
+          "name": "부담 없는 요청 표현",
+          "score": 40,
+          "description": "상대 부서의 상황을 고려한 완곡한 요청 표현"
+        },
+        {
+          "name": "일정·범위의 현실성",
+          "score": 30,
+          "description": "요청 범위와 시점이 과도하지 않음"
+        },
+        {
+          "name": "후속 소통 가능성",
+          "score": 30,
+          "description": "추가 문의 또는 협의 가능성 명시"
+        }
+      ]
+    },
+    {
+      "category": "언어·표현",
+      "total_score": 100,
+      "description": "비즈니스 이메일 문체와 언어적 완성도를 평가",
+      "criteria": [
+        {
+          "name": "공손하고 격식 있는 문체",
+          "score": 40,
+          "description": "정중한 비즈니스 이메일 어조 유지"
+        },
+        {
+          "name": "맞춤법 및 문법 정확성",
+          "score": 30,
+          "description": "오탈자, 띄어쓰기, 문법 오류 없음"
+        },
+        {
+          "name": "불필요한 감정 표현 배제",
+          "score": 30,
+          "description": "업무와 무관한 감성적·사적인 표현 최소화"
+        }
+      ]
+    }
+  ],
+  "special_types": {
+    "email_request": {
+      "weights": {
+        "형식·체계": 20,
+        "내용·완성도": 30,
+        "논리·타당성": 25,
+        "실행가능성": 15,
+        "언어·표현": 10
+      }
+    },
+    "email_schedule_change": {
+      "weights": {
+        "형식·체계": 20,
+        "내용·완성도": 25,
+        "논리·타당성": 20,
+        "실행가능성": 25,
+        "언어·표현": 10
+      }
+    }
+  }
+}

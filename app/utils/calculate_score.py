@@ -7,7 +7,8 @@ def calculate_basic_score(rubric_name: str, special_type: str = None, user_score
     basic_rubric = rubric_manager.get_basic_rubric(rubric_name)
     rubric_weights = rubric_manager.get_special_weights(rubric_name, special_type)
     score = 0
-
+    print("아야어여")
+    print(rubric_weights, user_score)
     for name, weights in rubric_weights.items():
         score += user_score.get(name, 0)/100 * weights
 
