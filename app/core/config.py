@@ -1,10 +1,13 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Config(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env")
 
-    APP_NAME: str
+    OPENAI_API_KEY: str
+    INTERNAL_JWT_SECRET: str
+
+    APP_NAME: str = "FirstStepAI"
     DEBUG: bool = True
-    OPENAI_API_KEY: str = ""
+    FASTAPI_URL: str = "http://localhost:8000"
 
 config = Config()

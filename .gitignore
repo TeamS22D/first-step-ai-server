@@ -1,14 +1,15 @@
-# Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
 
+.venv/
+new_venv/
 
-# 환경파일
 .env
-first/
+*.log
 
-
+.DS_Store
 .idea/
+*.iml
